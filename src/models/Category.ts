@@ -29,6 +29,31 @@ export class Category {
   @UpdateDateColumn()
   updatedAt: Date;
 
+  // Campos SEO
+  @Field({ nullable: true })
+  @Column({ length: 160, nullable: true, name: 'meta_title' })
+  metaTitle: string;
+
+  @Field({ nullable: true })
+  @Column({ type: 'text', nullable: true, name: 'meta_description' })
+  metaDescription: string;
+
+  @Field({ nullable: true })
+  @Column({ type: 'text', nullable: true, name: 'meta_keywords' })
+  metaKeywords: string;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true, default: true, name: 'indexable' })
+  indexable: boolean;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true, name: 'canonical_url' })
+  canonicalUrl: string;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true, name: 'social_image_url' })
+  socialImageUrl: string;
+
   @Field(() => [Post], { nullable: true })
   @OneToMany(() => Post, post => post.category)
   posts: Post[];

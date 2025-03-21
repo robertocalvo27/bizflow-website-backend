@@ -42,6 +42,30 @@ export class Post {
   @UpdateDateColumn()
   updatedAt: Date;
 
+  @Field({ nullable: true })
+  @Column({ length: 160, nullable: true, name: 'meta_title' })
+  metaTitle: string;
+
+  @Field({ nullable: true })
+  @Column({ type: 'text', nullable: true, name: 'meta_description' })
+  metaDescription: string;
+
+  @Field({ nullable: true })
+  @Column({ type: 'text', nullable: true, name: 'meta_keywords' })
+  metaKeywords: string;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true, default: true, name: 'indexable' })
+  indexable: boolean;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true, name: 'canonical_url' })
+  canonicalUrl: string;
+
+  @Field({ nullable: true })
+  @Column({ type: 'jsonb', nullable: true, name: 'structured_data' })
+  structuredData: Record<string, any>;
+
   @Field(() => Category)
   @ManyToOne(() => Category, category => category.posts)
   @JoinColumn({ name: 'categoryId' })
@@ -63,6 +87,10 @@ export class Post {
   @Field({ nullable: true })
   @Column({ nullable: true })
   featuredImageUrl: string;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true, name: 'social_image_url' })
+  socialImageUrl: string;
 
   @Field(() => [Post], { nullable: true })
   @ManyToMany(() => Post, { nullable: true })

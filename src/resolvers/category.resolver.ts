@@ -1,6 +1,6 @@
 import { Resolver, Query, Mutation, Arg, UseMiddleware } from 'type-graphql';
 import { Category } from '../models/Category';
-import { CategoryInput } from '../schema/category.schema';
+import { CategoryInput, CategoryUpdateInput } from '../schema/category.schema';
 import { AppDataSource } from '../database/data-source';
 import { isAuth } from '../middleware/auth';
 import { slugify } from '../utils/slugify';
@@ -48,7 +48,7 @@ export class CategoryResolver {
   @UseMiddleware(isAuth)
   async updateCategory(
     @Arg('id') id: string,
-    @Arg('input') input: CategoryInput
+    @Arg('input') input: CategoryUpdateInput
   ): Promise<Category> {
     const category = await this.categoryRepository.findOne({
       where: { id },
