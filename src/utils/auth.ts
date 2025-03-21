@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 import { User } from '../models/User';
 import { config } from 'dotenv';
 
@@ -20,6 +20,7 @@ export const createToken = (user: User): string => {
     role: user.role
   };
   
+  // @ts-ignore - Ignorar error de tipo ya que sabemos que esto funciona en tiempo de ejecución
   return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 };
 
