@@ -3,6 +3,21 @@
 # !!!   DO NOT MODIFY THIS FILE BY YOURSELF   !!!
 # -----------------------------------------------
 
+type CTA {
+  backgroundColor: String
+  buttonColor: String
+  buttonText: String!
+  createdAt: DateTimeISO!
+  description: String!
+  destination: String!
+  id: ID!
+  openInNewTab: Boolean!
+  textColor: String
+  title: String!
+  type: String!
+  updatedAt: DateTimeISO!
+}
+
 type Category {
   canonicalUrl: String
   createdAt: DateTimeISO!
@@ -82,19 +97,29 @@ type LoginResponse {
 }
 
 type Mutation {
+  addPostToVideo(postId: String!, videoId: String!): Video!
+  assignCTAToPost(ctaId: String!, postId: String!): Post!
+  createCTA(backgroundColor: String, buttonColor: String, buttonText: String!, description: String!, destination: String!, openInNewTab: Boolean = false, textColor: String, title: String!, type: String!): CTA!
   createCategory(input: CategoryInput!): Category!
   createPost(input: PostInput!): Post!
   createResource(input: ResourceInput!): Resource!
+  createVideo(categoryId: String!, description: String, duration: Float, featured: Boolean! = false, postIds: [String!], provider: String!, thumbnailUrl: String!, title: String!, transcription: String, videoId: String!, videoUrl: String!): Video!
+  deleteCTA(id: String!): Boolean!
   deleteCategory(id: String!): Boolean!
   deletePost(id: String!): Boolean!
   deleteResource(id: String!): Boolean!
+  deleteVideo(id: String!): Boolean!
   incrementDownloadCount(id: String!): Resource!
   login(email: String!, password: String!): LoginResponse!
   register(input: UserInput!): User!
+  removeCTAFromPost(postId: String!): Post!
+  removePostFromVideo(postId: String!, videoId: String!): Video!
+  updateCTA(backgroundColor: String, buttonColor: String, buttonText: String, description: String, destination: String, id: String!, openInNewTab: Boolean, textColor: String, title: String, type: String): CTA!
   updateCategory(id: String!, input: CategoryUpdateInput!): Category!
   updatePost(id: String!, input: PostUpdateInput!): Post!
   updateResource(id: String!, input: ResourceUpdateInput!): Resource!
   updateUser(id: String!, input: UserUpdateInput!): User!
+  updateVideo(categoryId: String, description: String, duration: Float, featured: Boolean, id: String!, postIds: [String!], provider: String, thumbnailUrl: String, title: String, transcription: String, videoId: String, videoUrl: String): Video!
 }
 
 type PageInfo {
@@ -103,6 +128,12 @@ type PageInfo {
   hasPreviousPage: Boolean!
   totalItems: Int!
   totalPages: Int!
+}
+
+type PaginatedCTAResponse {
+  hasMore: Boolean!
+  items: [CTA!]!
+  totalCount: Float!
 }
 
 type PaginatedCategories {
@@ -125,9 +156,23 @@ type PaginatedUsers {
   pageInfo: PageInfo!
 }
 
+type PaginatedVideos {
+  items: [Video!]!
+  meta: PaginationMeta!
+}
+
 input PaginationInput {
   limit: Int = 10
   offset: Int = 0
+}
+
+type PaginationMeta {
+  currentPage: Int!
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  itemsPerPage: Int!
+  totalItems: Int!
+  totalPages: Int!
 }
 
 type Post {
@@ -138,6 +183,8 @@ type Post {
   categoryId: String!
   content: String!
   createdAt: DateTimeISO!
+  cta: CTA
+  ctaId: String
   excerpt: String!
   featuredImageUrl: String
   id: ID!
@@ -145,6 +192,7 @@ type Post {
   metaDescription: String
   metaKeywords: String
   metaTitle: String
+  metadata: String
   publishedAt: DateTimeISO
   relatedPosts: [Post!]
   slug: String!
@@ -153,6 +201,7 @@ type Post {
   structuredData: JSON
   title: String!
   updatedAt: DateTimeISO!
+  videos: [Video!]
 }
 
 input PostFilterInput {
@@ -231,10 +280,14 @@ type Query {
   categoryBySlug(slug: String!): Category
   countPublishedPosts: Int!
   featuredResources: [Resource!]!
+  featuredVideos: [Video!]!
+  getCTA(id: String!): CTA
+  getCTAs(skip: Int! = 0, take: Int! = 10): PaginatedCTAResponse!
   paginatedCategories(filter: CategoryFilterInput, pagination: PaginationInput, sort: CategorySortInput): PaginatedCategories!
   paginatedPosts(filter: PostFilterInput, pagination: PaginationInput, sort: PostSortInput): PaginatedPosts!
   paginatedResources(filter: ResourceFilterInput, pagination: PaginationInput, sort: ResourceSortInput): PaginatedResources!
   paginatedUsers(filter: UserFilterInput, pagination: PaginationInput, sort: UserSortInput): PaginatedUsers!
+  paginatedVideos(limit: Int! = 10, page: Int! = 1): PaginatedVideos!
   post(id: String!): Post
   postBySlug(slug: String!): Post
   posts: [Post!]!
@@ -249,6 +302,11 @@ type Query {
   searchPosts(filter: PostFilterInput, pagination: PaginationInput, sort: PostSortInput, term: String!): PaginatedPosts!
   user(id: String!): User
   users: [User!]!
+  video(id: String!): Video
+  videoBySlug(slug: String!): Video
+  videos: [Video!]!
+  videosByCategory(categoryId: String!, limit: Int! = 10, page: Int! = 1): PaginatedVideos!
+  videosByPost(page: Int! = 1, perPage: Int! = 10, postId: String!): PaginatedVideos!
 }
 
 type Resource {
@@ -400,4 +458,26 @@ input UserUpdateInput {
   name: String
   password: String
   role: UserRole
+}
+
+type Video {
+  author: User!
+  authorId: String!
+  category: Category!
+  categoryId: String!
+  createdAt: DateTimeISO!
+  description: String
+  duration: Float!
+  featured: Boolean!
+  id: ID!
+  metadata: JSON
+  posts: [Post!]
+  provider: String!
+  slug: String!
+  thumbnailUrl: String!
+  title: String!
+  transcription: String
+  updatedAt: DateTimeISO!
+  videoId: String!
+  videoUrl: String!
 }

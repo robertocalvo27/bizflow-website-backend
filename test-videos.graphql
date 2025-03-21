@@ -1,0 +1,290 @@
+# Mutation para crear un nuevo video
+mutation CreateVideo {
+  createVideo(
+    input: {
+      title: "Tutorial de React Hooks"
+      description: "Aprende a usar los hooks básicos de React: useState, useEffect, useContext y más"
+      videoUrl: "https://www.youtube.com/watch?v=example123"
+      thumbnailUrl: "https://i.ytimg.com/vi/example123/maxresdefault.jpg"
+      provider: YOUTUBE
+      videoId: "example123"
+      duration: 1320
+      featured: true
+      categoryId: "57937e2e-77a8-4ebc-a02c-b7cf9e039be2" # Reemplazar con un ID real de categoría
+      relatedPostIds: ["b9cc88c1-4b1c-4aa1-9254-2062a072f1e3"] # Reemplazar con un ID real de post
+      metadata: { tags: ["react", "javascript", "hooks", "frontend"] }
+    }
+  ) {
+    id
+    title
+    slug
+    videoUrl
+    provider
+    videoId
+    featured
+    createdAt
+    author {
+      id
+      name
+    }
+    category {
+      id
+      name
+    }
+    posts {
+      id
+      title
+    }
+  }
+}
+
+# Consulta para obtener todos los videos
+query GetVideos {
+  videos {
+    id
+    title
+    slug
+    description
+    videoUrl
+    thumbnailUrl
+    provider
+    videoId
+    duration
+    featured
+    createdAt
+    author {
+      id
+      name
+    }
+    category {
+      id
+      name
+    }
+  }
+}
+
+# Consulta para obtener videos paginados y filtrados
+query GetPaginatedVideos {
+  paginatedVideos(
+    page: 1
+    perPage: 10
+    filter: { featured: true, categoryId: "57937e2e-77a8-4ebc-a02c-b7cf9e039be2" }
+    sort: { field: CREATED_AT, order: DESC }
+  ) {
+    items {
+      id
+      title
+      slug
+      thumbnailUrl
+      videoUrl
+      provider
+      duration
+      featured
+      category {
+        name
+      }
+      author {
+        name
+      }
+    }
+    meta {
+      currentPage
+      itemCount
+      itemsPerPage
+      totalItems
+      totalPages
+    }
+  }
+}
+
+# Consulta para obtener videos destacados
+query GetFeaturedVideos {
+  featuredVideos {
+    id
+    title
+    slug
+    thumbnailUrl
+    videoUrl
+    provider
+    videoId
+    duration
+    createdAt
+  }
+}
+
+# Consulta para obtener un video por ID
+query GetVideoById {
+  video(id: "5d3e2f5a-6a8c-4d0c-91e1-7e0f9a1d2b3e") { # Reemplazar con un ID real
+    id
+    title
+    slug
+    description
+    videoUrl
+    thumbnailUrl
+    provider
+    videoId
+    duration
+    transcription
+    featured
+    metadata
+    createdAt
+    author {
+      id
+      name
+    }
+    category {
+      id
+      name
+    }
+    posts {
+      id
+      title
+      slug
+    }
+  }
+}
+
+# Consulta para obtener un video por slug
+query GetVideoBySlug {
+  videoBySlug(slug: "tutorial-de-react-hooks") {
+    id
+    title
+    slug
+    description
+    videoUrl
+    thumbnailUrl
+    provider
+    videoId
+    duration
+    transcription
+    featured
+    metadata
+    createdAt
+    author {
+      id
+      name
+    }
+    category {
+      id
+      name
+    }
+    posts {
+      id
+      title
+      slug
+    }
+  }
+}
+
+# Consulta para obtener videos por categoría
+query GetVideosByCategory {
+  videosByCategory(
+    categoryId: "57937e2e-77a8-4ebc-a02c-b7cf9e039be2" # Reemplazar con un ID real
+    page: 1
+    perPage: 10
+    sort: { field: CREATED_AT, order: DESC }
+  ) {
+    items {
+      id
+      title
+      slug
+      thumbnailUrl
+      videoUrl
+      provider
+      videoId
+      duration
+      createdAt
+    }
+    meta {
+      currentPage
+      itemCount
+      itemsPerPage
+      totalItems
+      totalPages
+    }
+  }
+}
+
+# Consulta para obtener videos relacionados con un post
+query GetVideosByPost {
+  videosByPost(
+    postId: "b9cc88c1-4b1c-4aa1-9254-2062a072f1e3" # Reemplazar con un ID real
+    page: 1
+    perPage: 5
+  ) {
+    items {
+      id
+      title
+      slug
+      thumbnailUrl
+      provider
+      videoId
+      duration
+    }
+    meta {
+      currentPage
+      itemCount
+      itemsPerPage
+      totalItems
+      totalPages
+    }
+  }
+}
+
+# Mutation para actualizar un video
+mutation UpdateVideo {
+  updateVideo(
+    id: "5d3e2f5a-6a8c-4d0c-91e1-7e0f9a1d2b3e" # Reemplazar con un ID real
+    input: {
+      title: "Tutorial actualizado de React Hooks"
+      description: "Versión actualizada con los últimos hooks de React 18"
+      featured: false
+      relatedPostIds: ["b9cc88c1-4b1c-4aa1-9254-2062a072f1e3", "a8dfc321-6509-4b9a-8e51-7f10be39c456"] # Reemplazar con IDs reales
+    }
+  ) {
+    id
+    title
+    description
+    featured
+    posts {
+      id
+      title
+    }
+    updatedAt
+  }
+}
+
+# Mutation para eliminar un video
+mutation DeleteVideo {
+  deleteVideo(id: "5d3e2f5a-6a8c-4d0c-91e1-7e0f9a1d2b3e") # Reemplazar con un ID real
+}
+
+# Mutation para agregar un post a un video
+mutation AddPostToVideo {
+  addPostToVideo(
+    videoId: "5d3e2f5a-6a8c-4d0c-91e1-7e0f9a1d2b3e" # Reemplazar con un ID real
+    postId: "a8dfc321-6509-4b9a-8e51-7f10be39c456" # Reemplazar con un ID real
+  ) {
+    id
+    title
+    posts {
+      id
+      title
+    }
+  }
+}
+
+# Mutation para remover un post de un video
+mutation RemovePostFromVideo {
+  removePostFromVideo(
+    videoId: "5d3e2f5a-6a8c-4d0c-91e1-7e0f9a1d2b3e" # Reemplazar con un ID real
+    postId: "a8dfc321-6509-4b9a-8e51-7f10be39c456" # Reemplazar con un ID real
+  ) {
+    id
+    title
+    posts {
+      id
+      title
+    }
+  }
+} 

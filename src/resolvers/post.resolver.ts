@@ -14,6 +14,7 @@ import { isAuth } from '../middleware/auth';
 import { MyContext } from '../middleware/auth';
 import { slugify } from '../utils/slugify';
 import { In, Like, Between, IsNull, Not, FindOptionsWhere, FindOptionsOrder } from 'typeorm';
+import { CTA } from '../models/CTA';
 
 @Resolver()
 export class PostResolver {
@@ -411,5 +412,78 @@ export class PostResolver {
 
     const result = await this.postRepository.delete(id);
     return result.affected !== 0;
+  }
+
+  @Mutation(() => Post)
+  @UseMiddleware(isAuth)
+  async assignCTAToPost(
+    @Arg('postId') postId: string,
+    @Arg('ctaId') ctaId: string,
+    @Ctx() { payload }: MyContext
+  ): Promise<Post> {
+    const post = await this.postRepository.findOne({ 
+      where: { id: postId },
+      relations: ['author']
+    });
+
+    if (!post) {
+      throw new Error('Post no encontrado');
+    }
+
+    // Verificar que el usuario sea el autor o un administrador
+    if (payload.role !== 'admin' && post.authorId !== payload.userId) {
+      throw new Error('No tienes permiso para editar este post');
+    }
+
+    // Verificar que el CTA exista
+    const ctaRepository = AppDataSource.getRepository(CTA);
+    const cta = await ctaRepository.findOne({ where: { id: ctaId } });
+
+    if (!cta) {
+      throw new Error('CTA no encontrado');
+    }
+
+    // Asignar el CTA al post
+    post.ctaId = ctaId;
+    post.cta = cta;
+
+    await this.postRepository.save(post);
+    
+    return post;
+  }
+
+  @Mutation(() => Post)
+  @UseMiddleware(isAuth)
+  async removeCTAFromPost(
+    @Arg('postId') postId: string,
+    @Ctx() { payload }: MyContext
+  ): Promise<Post> {
+    const post = await this.postRepository.findOne({ 
+      where: { id: postId },
+      relations: ['author'] 
+    });
+
+    if (!post) {
+      throw new Error('Post no encontrado');
+    }
+
+    // Verificar que el usuario sea el autor o un administrador
+    if (payload.role !== 'admin' && post.authorId !== payload.userId) {
+      throw new Error('No tienes permiso para editar este post');
+    }
+
+    // Usar un raw query para evitar problemas de tipado
+    await this.postRepository.query(
+      `UPDATE posts SET "ctaId" = NULL WHERE id = $1`, 
+      [postId]
+    );
+
+    // Recargar el post actualizado para asegurarnos de tener datos frescos
+    const updatedPost = await this.postRepository.findOne({
+      where: { id: postId },
+      relations: ['author']
+    });
+
+    return updatedPost!;
   }
 } 
