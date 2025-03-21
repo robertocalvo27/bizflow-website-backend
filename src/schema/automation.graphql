@@ -1,0 +1,55 @@
+type AutomatedContent {
+  id: ID!
+  title: String!
+  content: String!
+  excerpt: String
+  featuredImage: String
+  tags: [String!]
+  seoMetadata: SEOMetadata
+  status: PublishStatus!
+  source: ContentSource!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ContentSource {
+  type: String!
+  originalUrl: String
+  rssSource: String
+  confidence: Float
+}
+
+type AutomationResponse {
+  success: Boolean!
+  postId: ID
+  status: String!
+  errors: [String!]
+  warnings: [String!]
+}
+
+input AutomatedContentInput {
+  title: String!
+  content: String!
+  excerpt: String
+  featuredImage: String
+  tags: [String!]
+  seoMetadata: SEOMetadataInput
+  source: ContentSourceInput!
+}
+
+input ContentSourceInput {
+  type: String!
+  originalUrl: String
+  rssSource: String
+  confidence: Float
+}
+
+extend type Mutation {
+  createAutomatedContent(input: AutomatedContentInput!): AutomationResponse!
+  updateAutomatedContent(id: ID!, input: AutomatedContentInput!): AutomationResponse!
+}
+
+extend type Query {
+  getAutomatedContent(id: ID!): AutomatedContent
+  listAutomatedContent(status: PublishStatus): [AutomatedContent!]!
+} 

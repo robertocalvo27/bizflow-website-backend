@@ -1,8 +1,11 @@
-import { User } from "../models/User";
-import { Request, Response } from "express";
+import { Request, Response } from 'express';
 
-export interface AuthContext {
-  user?: User;
-  req: any;
-  res: any;
+export interface Context {
+  req: Request;
+  res: Response;
+  user?: {
+    id: string;
+    role: string;
+    [key: string]: any;
+  };
 }
