@@ -7,6 +7,7 @@ import { AppDataSource } from './database/data-source';
 import { UserResolver } from './resolvers/user.resolver';
 import { CategoryResolver } from './resolvers/category.resolver';
 import { PostResolver } from './resolvers/post.resolver';
+import { ResourceResolver } from './resolvers/resource.resolver';
 import { config } from 'dotenv';
 
 // Cargar variables de entorno
@@ -34,7 +35,7 @@ async function bootstrap() {
 
   // Construir el schema GraphQL
   const schema = await buildSchema({
-    resolvers: [UserResolver, CategoryResolver, PostResolver],
+    resolvers: [UserResolver, CategoryResolver, PostResolver, ResourceResolver],
     emitSchemaFile: true,
     validate: false,
   });

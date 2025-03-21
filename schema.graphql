@@ -84,12 +84,16 @@ type LoginResponse {
 type Mutation {
   createCategory(input: CategoryInput!): Category!
   createPost(input: PostInput!): Post!
+  createResource(input: ResourceInput!): Resource!
   deleteCategory(id: String!): Boolean!
   deletePost(id: String!): Boolean!
+  deleteResource(id: String!): Boolean!
+  incrementDownloadCount(id: String!): Resource!
   login(email: String!, password: String!): LoginResponse!
   register(input: UserInput!): User!
   updateCategory(id: String!, input: CategoryUpdateInput!): Category!
   updatePost(id: String!, input: PostUpdateInput!): Post!
+  updateResource(id: String!, input: ResourceUpdateInput!): Resource!
   updateUser(id: String!, input: UserUpdateInput!): User!
 }
 
@@ -108,6 +112,11 @@ type PaginatedCategories {
 
 type PaginatedPosts {
   items: [Post!]!
+  pageInfo: PageInfo!
+}
+
+type PaginatedResources {
+  items: [Resource!]!
   pageInfo: PageInfo!
 }
 
@@ -221,18 +230,112 @@ type Query {
   category(id: String!): Category
   categoryBySlug(slug: String!): Category
   countPublishedPosts: Int!
+  featuredResources: [Resource!]!
   paginatedCategories(filter: CategoryFilterInput, pagination: PaginationInput, sort: CategorySortInput): PaginatedCategories!
   paginatedPosts(filter: PostFilterInput, pagination: PaginationInput, sort: PostSortInput): PaginatedPosts!
+  paginatedResources(filter: ResourceFilterInput, pagination: PaginationInput, sort: ResourceSortInput): PaginatedResources!
   paginatedUsers(filter: UserFilterInput, pagination: PaginationInput, sort: UserSortInput): PaginatedUsers!
   post(id: String!): Post
   postBySlug(slug: String!): Post
   posts: [Post!]!
   postsByCategory(categoryId: String!, pagination: PaginationInput, sort: PostSortInput): PaginatedPosts!
+  publicResources(filter: ResourceFilterInput, pagination: PaginationInput, sort: ResourceSortInput): [Resource!]!
   publishedPosts(pagination: PaginationInput, sort: PostSortInput): [Post!]!
+  resource(id: String!): Resource
+  resourceBySlug(slug: String!): Resource
+  resources: [Resource!]!
+  resourcesByCategory(categoryId: String!, pagination: PaginationInput, sort: ResourceSortInput): [Resource!]!
   searchCategories(pagination: PaginationInput, sort: CategorySortInput, term: String!): PaginatedCategories!
   searchPosts(filter: PostFilterInput, pagination: PaginationInput, sort: PostSortInput, term: String!): PaginatedPosts!
   user(id: String!): User
   users: [User!]!
+}
+
+type Resource {
+  category: Category!
+  categoryId: String!
+  createdAt: DateTimeISO!
+  description: String!
+  downloadCount: Float!
+  downloadInstructions: String
+  featured: Boolean!
+  fileSize: Float!
+  fileUrl: String!
+  id: ID!
+  isPublic: Boolean!
+  metadata: JSON
+  resourceType: String!
+  slug: String!
+  thumbnailUrl: String
+  title: String!
+  updatedAt: DateTimeISO!
+  uploader: User!
+  uploaderId: String!
+}
+
+input ResourceFilterInput {
+  categoryIds: [String!]
+  description: TextFilterInput
+  featured: Boolean
+  isPublic: Boolean
+  resourceTypes: [ResourceType!]
+  title: TextFilterInput
+  uploaderIds: [String!]
+}
+
+input ResourceInput {
+  categoryId: String!
+  description: String!
+  downloadInstructions: String
+  featured: Boolean = false
+  fileSize: Float!
+  fileUrl: String!
+  isPublic: Boolean = true
+  metadata: JSON
+  resourceType: ResourceType!
+  slug: String
+  thumbnailUrl: String
+  title: String!
+  uploaderId: String
+}
+
+"""Campos por los que se pueden ordenar los recursos"""
+enum ResourceSortField {
+  CREATED_AT
+  DOWNLOAD_COUNT
+  FILE_SIZE
+  TITLE
+  UPDATED_AT
+}
+
+input ResourceSortInput {
+  field: ResourceSortField! = CREATED_AT
+  order: SortOrder! = DESC
+}
+
+"""Tipos de recursos disponibles"""
+enum ResourceType {
+  DOC
+  IMAGE
+  OTHER
+  PDF
+  XLSX
+  ZIP
+}
+
+input ResourceUpdateInput {
+  categoryId: String
+  description: String
+  downloadInstructions: String
+  featured: Boolean
+  fileSize: Float
+  fileUrl: String
+  isPublic: Boolean
+  metadata: JSON
+  resourceType: ResourceType
+  slug: String
+  thumbnailUrl: String
+  title: String
 }
 
 """Dirección de ordenamiento (ascendente o descendente)"""
