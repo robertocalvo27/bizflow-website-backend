@@ -121,8 +121,16 @@ export class PostResolver {
         where: { id: In(relatedPostIds) }
       });
       
-      savedPost.relatedPosts = relatedPosts;
-      await this.postRepository.save(savedPost);
+      // Obtener el post guardado con todas sus relaciones
+      const postToUpdate = await this.postRepository.findOne({
+        where: { id: savedPost.id },
+        relations: ['relatedPosts']
+      });
+      
+      if (postToUpdate) {
+        postToUpdate.relatedPosts = relatedPosts;
+        await this.postRepository.save(postToUpdate);
+      }
     }
 
     return this.postRepository.findOne({ 

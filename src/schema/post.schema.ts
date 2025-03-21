@@ -1,5 +1,6 @@
 import { InputType, Field } from 'type-graphql';
 import { Length, MaxLength, MinLength, IsOptional, IsUUID, IsArray, IsBoolean, IsUrl } from 'class-validator';
+import { GraphQLJSON } from 'graphql-type-json';
 
 @InputType()
 export class PostInput {
@@ -65,9 +66,9 @@ export class PostInput {
   @IsUrl({}, { message: 'La URL canónica debe ser una URL válida' })
   canonicalUrl?: string;
 
-  @Field({ nullable: true })
+  @Field(() => GraphQLJSON, { nullable: true })
   @IsOptional()
-  structuredData?: string;
+  structuredData?: Record<string, any>;
 
   @Field({ nullable: true })
   @IsOptional()
@@ -142,9 +143,9 @@ export class PostUpdateInput {
   @IsUrl({}, { message: 'La URL canónica debe ser una URL válida' })
   canonicalUrl?: string;
 
-  @Field({ nullable: true })
+  @Field(() => GraphQLJSON, { nullable: true })
   @IsOptional()
-  structuredData?: string;
+  structuredData?: Record<string, any>;
 
   @Field({ nullable: true })
   @IsOptional()
