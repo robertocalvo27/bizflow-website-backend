@@ -90,8 +90,20 @@ export class Post {
   featuredImageUrl: string;
 
   @Field({ nullable: true })
+  @Column({ length: 200, nullable: true, name: 'featured_image_alt' })
+  featuredImageAlt: string;
+
+  @Field({ nullable: true })
+  @Column({ length: 200, nullable: true, name: 'featured_image_caption' })
+  featuredImageCaption: string;
+
+  @Field({ nullable: true })
   @Column({ nullable: true, name: 'social_image_url' })
   socialImageUrl: string;
+
+  @Field({ nullable: true })
+  @Column({ length: 200, nullable: true, name: 'social_image_alt' })
+  socialImageAlt: string;
 
   @Field(() => [Post], { nullable: true })
   @ManyToMany(() => Post, { nullable: true })
@@ -107,4 +119,12 @@ export class Post {
     }
   })
   relatedPosts: Post[];
+
+  @Field({ nullable: true })
+  @Column({ nullable: true, name: 'reading_time' })
+  readingTime: number;
+
+  @Field(() => GraphQLJSON, { nullable: true })
+  @Column({ type: 'jsonb', nullable: true, name: 'custom_metadata' })
+  customMetadata: Record<string, any>;
 } 

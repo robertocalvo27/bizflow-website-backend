@@ -1,5 +1,5 @@
 import { InputType, Field, ObjectType, registerEnumType } from 'type-graphql';
-import { Length, MaxLength, MinLength, IsOptional, IsUUID, IsArray, IsBoolean, IsUrl } from 'class-validator';
+import { Length, MaxLength, MinLength, IsOptional, IsUUID, IsArray, IsBoolean, IsUrl, IsNumber, Min, Max } from 'class-validator';
 import { GraphQLJSON } from 'graphql-type-json';
 import { Post } from '../models/Post';
 import { PaginationInput, SortInput, PageInfo, DateFilterInput, TextFilterInput } from './common.schema';
@@ -66,6 +66,16 @@ export class PostInput {
   @IsOptional()
   featuredImageUrl?: string;
 
+  @Field({ nullable: true })
+  @IsOptional()
+  @Length(3, 200, { message: 'El texto alternativo de la imagen debe tener entre 3 y 200 caracteres' })
+  featuredImageAlt?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @Length(3, 200, { message: 'El pie de foto debe tener entre 3 y 200 caracteres' })
+  featuredImageCaption?: string;
+
   @Field(() => [String], { nullable: true })
   @IsOptional()
   @IsArray()
@@ -103,6 +113,22 @@ export class PostInput {
   @IsOptional()
   @IsUrl({}, { message: 'La URL de la imagen social debe ser una URL válida' })
   socialImageUrl?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @Length(3, 200, { message: 'El texto alternativo de la imagen social debe tener entre 3 y 200 caracteres' })
+  socialImageAlt?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(60)
+  readingTime?: number;
+
+  @Field(() => GraphQLJSON, { nullable: true })
+  @IsOptional()
+  customMetadata?: Record<string, any>;
 }
 
 @InputType()
@@ -143,6 +169,16 @@ export class PostUpdateInput {
   @IsOptional()
   featuredImageUrl?: string;
 
+  @Field({ nullable: true })
+  @IsOptional()
+  @Length(3, 200, { message: 'El texto alternativo de la imagen debe tener entre 3 y 200 caracteres' })
+  featuredImageAlt?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @Length(3, 200, { message: 'El pie de foto debe tener entre 3 y 200 caracteres' })
+  featuredImageCaption?: string;
+
   @Field(() => [String], { nullable: true })
   @IsOptional()
   @IsArray()
@@ -180,6 +216,22 @@ export class PostUpdateInput {
   @IsOptional()
   @IsUrl({}, { message: 'La URL de la imagen social debe ser una URL válida' })
   socialImageUrl?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @Length(3, 200, { message: 'El texto alternativo de la imagen social debe tener entre 3 y 200 caracteres' })
+  socialImageAlt?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(60)
+  readingTime?: number;
+
+  @Field(() => GraphQLJSON, { nullable: true })
+  @IsOptional()
+  customMetadata?: Record<string, any>;
 }
 
 @InputType()
