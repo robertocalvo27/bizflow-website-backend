@@ -5,6 +5,7 @@ import { Category } from './Category';
 import { Video } from './Video';
 import { CTA } from './CTA';
 import { GraphQLJSON } from 'graphql-type-json';
+import { Tag } from './Tag';
 
 @ObjectType()
 @Entity('posts')
@@ -138,6 +139,21 @@ export class Post {
   @Field(() => String, { nullable: true })
   @Column({ type: "jsonb", nullable: true })
   metadata: any;
+
+  @Field(() => [Tag], { nullable: true })
+  @ManyToMany(() => Tag, tag => tag.posts)
+  @JoinTable({
+    name: 'post_tags',
+    joinColumn: {
+      name: 'post_id',
+      referencedColumnName: 'id'
+    },
+    inverseJoinColumn: {
+      name: 'tag_id',
+      referencedColumnName: 'id'
+    }
+  })
+  tags: Tag[];
 
   @Field({ nullable: true })
   @Column({ nullable: true, name: 'reading_time' })

@@ -4,6 +4,7 @@ import { GraphQLJSON } from 'graphql-type-json';
 import { User } from './User';
 import { Category } from './Category';
 import { Post } from './Post';
+import { Tag } from './Tag';
 
 export enum VideoProvider {
   YOUTUBE = 'youtube',
@@ -82,19 +83,34 @@ export class Video {
   authorId: string;
 
   @Field(() => [Post], { nullable: true })
-  @ManyToMany(() => Post, (post) => post.videos)
+  @ManyToMany(() => Post, post => post.videos)
   @JoinTable({
     name: 'video_posts',
     joinColumn: {
-      name: 'videoId',
+      name: 'video_id',
       referencedColumnName: 'id'
     },
     inverseJoinColumn: {
-      name: 'postId',
+      name: 'post_id',
       referencedColumnName: 'id'
     }
   })
   posts: Post[];
+
+  @Field(() => [Tag], { nullable: true })
+  @ManyToMany(() => Tag, tag => tag.videos)
+  @JoinTable({
+    name: 'video_tags',
+    joinColumn: {
+      name: 'video_id',
+      referencedColumnName: 'id'
+    },
+    inverseJoinColumn: {
+      name: 'tag_id',
+      referencedColumnName: 'id'
+    }
+  })
+  tags: Tag[];
 
   @Field(() => GraphQLJSON, { nullable: true })
   @Column({ type: 'jsonb', nullable: true })

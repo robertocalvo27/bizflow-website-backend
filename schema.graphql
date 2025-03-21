@@ -98,26 +98,33 @@ type LoginResponse {
 
 type Mutation {
   addPostToVideo(postId: String!, videoId: String!): Video!
+  addTagToPost(postId: String!, tagId: String!): Post!
+  addTagToVideo(tagId: String!, videoId: String!): Video!
   assignCTAToPost(ctaId: String!, postId: String!): Post!
   createCTA(backgroundColor: String, buttonColor: String, buttonText: String!, description: String!, destination: String!, openInNewTab: Boolean = false, textColor: String, title: String!, type: String!): CTA!
   createCategory(input: CategoryInput!): Category!
   createPost(input: PostInput!): Post!
   createResource(input: ResourceInput!): Resource!
+  createTag(input: TagInput!): Tag!
   createVideo(categoryId: String!, description: String, duration: Float, featured: Boolean! = false, postIds: [String!], provider: String!, thumbnailUrl: String!, title: String!, transcription: String, videoId: String!, videoUrl: String!): Video!
   deleteCTA(id: String!): Boolean!
   deleteCategory(id: String!): Boolean!
   deletePost(id: String!): Boolean!
   deleteResource(id: String!): Boolean!
+  deleteTag(id: String!): Boolean!
   deleteVideo(id: String!): Boolean!
   incrementDownloadCount(id: String!): Resource!
   login(email: String!, password: String!): LoginResponse!
   register(input: UserInput!): User!
   removeCTAFromPost(postId: String!): Post!
   removePostFromVideo(postId: String!, videoId: String!): Video!
+  removeTagFromPost(postId: String!, tagId: String!): Post!
+  removeTagFromVideo(tagId: String!, videoId: String!): Video!
   updateCTA(backgroundColor: String, buttonColor: String, buttonText: String, description: String, destination: String, id: String!, openInNewTab: Boolean, textColor: String, title: String, type: String): CTA!
   updateCategory(id: String!, input: CategoryUpdateInput!): Category!
   updatePost(id: String!, input: PostUpdateInput!): Post!
   updateResource(id: String!, input: ResourceUpdateInput!): Resource!
+  updateTag(id: String!, input: TagUpdateInput!): Tag
   updateUser(id: String!, input: UserUpdateInput!): User!
   updateVideo(categoryId: String, description: String, duration: Float, featured: Boolean, id: String!, postIds: [String!], provider: String, thumbnailUrl: String, title: String, transcription: String, videoId: String, videoUrl: String): Video!
 }
@@ -133,7 +140,9 @@ type PageInfo {
 type PaginatedCTAResponse {
   hasMore: Boolean!
   items: [CTA!]!
-  totalCount: Float!
+  page: Int!
+  pages: Int!
+  total: Int!
 }
 
 type PaginatedCategories {
@@ -149,6 +158,14 @@ type PaginatedPosts {
 type PaginatedResources {
   items: [Resource!]!
   pageInfo: PageInfo!
+}
+
+type PaginatedTagResponse {
+  hasMore: Boolean!
+  items: [Tag!]!
+  page: Int!
+  pages: Int!
+  total: Int!
 }
 
 type PaginatedUsers {
@@ -204,6 +221,7 @@ type Post {
   socialImageUrl: String
   status: String!
   structuredData: JSON
+  tags: [Tag!]
   title: String!
   updatedAt: DateTimeISO!
   videos: [Video!]
@@ -301,6 +319,7 @@ type Query {
   paginatedCategories(filter: CategoryFilterInput, pagination: PaginationInput, sort: CategorySortInput): PaginatedCategories!
   paginatedPosts(filter: PostFilterInput, pagination: PaginationInput, sort: PostSortInput): PaginatedPosts!
   paginatedResources(filter: ResourceFilterInput, pagination: PaginationInput, sort: ResourceSortInput): PaginatedResources!
+  paginatedTags(filter: TagFilterInput, pagination: PaginationInput): PaginatedTagResponse!
   paginatedUsers(filter: UserFilterInput, pagination: PaginationInput, sort: UserSortInput): PaginatedUsers!
   paginatedVideos(limit: Int! = 10, page: Int! = 1): PaginatedVideos!
   post(id: String!): Post
@@ -315,6 +334,10 @@ type Query {
   resourcesByCategory(categoryId: String!, pagination: PaginationInput, sort: ResourceSortInput): [Resource!]!
   searchCategories(pagination: PaginationInput, sort: CategorySortInput, term: String!): PaginatedCategories!
   searchPosts(filter: PostFilterInput, pagination: PaginationInput, sort: PostSortInput, term: String!): PaginatedPosts!
+  searchTags(term: String!): [Tag!]!
+  tag(id: String!): Tag
+  tagBySlug(slug: String!): Tag
+  tags(filter: TagFilterInput, pagination: PaginationInput): [Tag!]!
   user(id: String!): User
   users: [User!]!
   video(id: String!): Video
@@ -417,6 +440,38 @@ enum SortOrder {
   DESC
 }
 
+type Tag {
+  createdAt: DateTimeISO!
+  description: String
+  id: ID!
+  isActive: Boolean
+  name: String!
+  posts: [Post!]
+  slug: String!
+  updatedAt: DateTimeISO!
+  videos: [Video!]
+}
+
+input TagFilterInput {
+  description: String
+  isActive: Boolean
+  name: String
+}
+
+input TagInput {
+  description: String
+  isActive: Boolean
+  name: String!
+  slug: String
+}
+
+input TagUpdateInput {
+  description: String
+  isActive: Boolean
+  name: String
+  slug: String
+}
+
 input TextFilterInput {
   contains: String
   endsWith: String
@@ -489,6 +544,7 @@ type Video {
   posts: [Post!]
   provider: String!
   slug: String!
+  tags: [Tag!]
   thumbnailUrl: String!
   title: String!
   transcription: String

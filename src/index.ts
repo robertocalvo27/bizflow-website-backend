@@ -10,6 +10,7 @@ import { PostResolver } from './resolvers/post.resolver';
 import { ResourceResolver } from './resolvers/resource.resolver';
 import { VideoResolver } from './resolvers/video.resolver';
 import { CTAResolver } from './resolvers/cta.resolver';
+import { TagResolver } from './resolvers/tag.resolver';
 import { config } from 'dotenv';
 import { verify } from 'jsonwebtoken';
 import { User } from './models/User';
@@ -40,7 +41,7 @@ async function bootstrap() {
 
   // Construir el schema GraphQL
   const schema = await buildSchema({
-    resolvers: [UserResolver, CategoryResolver, PostResolver, ResourceResolver, VideoResolver, CTAResolver],
+    resolvers: [UserResolver, CategoryResolver, PostResolver, ResourceResolver, VideoResolver, CTAResolver, TagResolver],
     emitSchemaFile: true,
     validate: false,
     authChecker: ({ context }: { context: AuthContext }, roles: string[]) => {

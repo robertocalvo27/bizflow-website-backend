@@ -18,7 +18,7 @@ export class CTAResolver {
     @Arg('skip', () => Int, { defaultValue: 0 }) skip: number,
     @Arg('take', () => Int, { defaultValue: 10 }) take: number,
   ): Promise<PaginatedCTAResponse> {
-    const [items, totalCount] = await this.ctaRepository.findAndCount({
+    const [items, total] = await this.ctaRepository.findAndCount({
       skip,
       take,
       order: { createdAt: 'DESC' }
@@ -26,8 +26,10 @@ export class CTAResolver {
 
     return {
       items,
-      totalCount,
-      hasMore: skip + take < totalCount
+      total,
+      hasMore: skip + take < total,
+      page: Math.floor(skip / take) + 1,
+      pages: Math.ceil(total / take)
     };
   }
 
