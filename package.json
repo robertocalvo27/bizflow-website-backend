@@ -8,9 +8,9 @@
     "dev": "nodemon --exec ts-node -r tsconfig-paths/register src/index.ts",
     "build": "tsc --skipLibCheck",
     "typeorm": "typeorm-ts-node-commonjs",
-    "migration:generate": "npm run typeorm migration:generate -- -d src/database/data-source.ts",
-    "migration:run": "npm run typeorm migration:run -- -d src/database/data-source.ts",
-    "migration:revert": "npm run typeorm migration:revert -- -d src/database/data-source.ts",
+    "migration:generate": "typeorm-ts-node-commonjs --skipLibCheck migration:generate -d src/database/data-source.ts",
+    "migration:run": "typeorm-ts-node-commonjs --skipLibCheck migration:run -d src/database/data-source.ts",
+    "migration:revert": "typeorm-ts-node-commonjs --skipLibCheck migration:revert -d src/database/data-source.ts",
     "seed": "ts-node -r tsconfig-paths/register src/database/seedData.ts",
     "setup": "npm run migration:run && npm run seed",
     "start:dev": "bash scripts/start-dev.sh"
@@ -31,12 +31,13 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "graphql": "^16.10.0",
+    "graphql-type-json": "^0.3.2",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.14.1",
     "reflect-metadata": "^0.2.2",
+    "tsconfig-paths": "^4.2.0",
     "type-graphql": "^2.0.0-rc.2",
-    "typeorm": "^0.3.21",
-    "tsconfig-paths": "^4.2.0"
+    "typeorm": "^0.3.21"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

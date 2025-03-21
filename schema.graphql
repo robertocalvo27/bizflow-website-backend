@@ -4,25 +4,54 @@
 # -----------------------------------------------
 
 type Category {
+  canonicalUrl: String
   createdAt: DateTimeISO!
   description: String
   id: ID!
+  indexable: Boolean
+  metaDescription: String
+  metaKeywords: String
+  metaTitle: String
   name: String!
   posts: [Post!]
   slug: String!
+  socialImageUrl: String
   updatedAt: DateTimeISO!
 }
 
 input CategoryInput {
+  canonicalUrl: String
   description: String
+  indexable: Boolean = true
+  metaDescription: String
+  metaKeywords: String
+  metaTitle: String
   name: String!
   slug: String
+  socialImageUrl: String
+}
+
+input CategoryUpdateInput {
+  canonicalUrl: String
+  description: String
+  indexable: Boolean
+  metaDescription: String
+  metaKeywords: String
+  metaTitle: String
+  name: String
+  slug: String
+  socialImageUrl: String
 }
 
 """
 A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.This scalar is serialized to a string in ISO 8601 format and parsed from a string in ISO 8601 format.
 """
 scalar DateTimeISO
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
 
 type LoginResponse {
   token: String!
@@ -36,13 +65,14 @@ type Mutation {
   deletePost(id: String!): Boolean!
   login(email: String!, password: String!): LoginResponse!
   register(input: UserInput!): User!
-  updateCategory(id: String!, input: CategoryInput!): Category!
+  updateCategory(id: String!, input: CategoryUpdateInput!): Category!
   updatePost(id: String!, input: PostUpdateInput!): Post!
 }
 
 type Post {
   author: User!
   authorId: String!
+  canonicalUrl: String
   category: Category!
   categoryId: String!
   content: String!
@@ -50,35 +80,55 @@ type Post {
   excerpt: String!
   featuredImageUrl: String
   id: ID!
+  indexable: Boolean
+  metaDescription: String
+  metaKeywords: String
+  metaTitle: String
   publishedAt: DateTimeISO
   relatedPosts: [Post!]
   slug: String!
+  socialImageUrl: String
   status: String!
+  structuredData: JSON
   title: String!
   updatedAt: DateTimeISO!
 }
 
 input PostInput {
   authorId: String
+  canonicalUrl: String
   categoryId: String
   content: String!
   excerpt: String!
   featuredImageUrl: String
+  indexable: Boolean = true
+  metaDescription: String
+  metaKeywords: String
+  metaTitle: String
   relatedPostIds: [String!]
   slug: String
+  socialImageUrl: String
   status: String = "draft"
+  structuredData: JSON
   title: String!
 }
 
 input PostUpdateInput {
+  canonicalUrl: String
   categoryId: String
   content: String
   excerpt: String
   featuredImageUrl: String
+  indexable: Boolean
+  metaDescription: String
+  metaKeywords: String
+  metaTitle: String
   publishedAt: DateTimeISO
   relatedPostIds: [String!]
   slug: String
+  socialImageUrl: String
   status: String
+  structuredData: JSON
   title: String
 }
 

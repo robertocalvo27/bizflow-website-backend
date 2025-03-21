@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { ObjectType, Field, ID } from 'type-graphql';
 import { User } from './User';
 import { Category } from './Category';
+import { GraphQLJSON } from 'graphql-type-json';
 
 @ObjectType()
 @Entity('posts')
@@ -62,7 +63,7 @@ export class Post {
   @Column({ nullable: true, name: 'canonical_url' })
   canonicalUrl: string;
 
-  @Field({ nullable: true })
+  @Field(() => GraphQLJSON, { nullable: true })
   @Column({ type: 'jsonb', nullable: true, name: 'structured_data' })
   structuredData: Record<string, any>;
 
