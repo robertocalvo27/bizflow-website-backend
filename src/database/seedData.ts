@@ -58,12 +58,66 @@ export const seedDatabase = async (): Promise<void> => {
     // Crear categorías
     console.log('Creando categorías...');
     const categories = [
-      { name: 'Transformación Digital', description: 'Artículos sobre transformación digital en la industria' },
-      { name: 'IoT Industrial', description: 'Todo sobre Internet de las Cosas en entornos industriales' },
-      { name: 'Mantenimiento', description: 'Estrategias de mantenimiento predictivo y preventivo' },
-      { name: 'Automatización', description: 'Procesos de automatización industrial' },
-      { name: 'Ciberseguridad', description: 'Seguridad en entornos industriales' },
-      { name: 'Analítica', description: 'Análisis de datos y Business Intelligence' }
+      { 
+        name: 'Transformación Digital', 
+        description: 'Artículos sobre transformación digital en la industria',
+        metaTitle: 'Transformación Digital Industrial | Bizflow',
+        metaDescription: 'Descubra las últimas tendencias en transformación digital para la industria 4.0 y los procesos industriales modernos.',
+        metaKeywords: 'transformación digital, industria 4.0, digitalización industrial',
+        indexable: true,
+        canonicalUrl: 'https://bizflow.com/categorias/transformacion-digital',
+        socialImageUrl: '/images/og/transformacion-digital.jpg'
+      },
+      { 
+        name: 'IoT Industrial', 
+        description: 'Todo sobre Internet de las Cosas en entornos industriales',
+        metaTitle: 'IoT Industrial y Conectividad | Bizflow',
+        metaDescription: 'Aprenda sobre implementación de Internet de las Cosas en entornos industriales y mejore la conectividad de sus procesos.',
+        metaKeywords: 'IoT industrial, internet de las cosas, sensores industriales, conectividad',
+        indexable: true,
+        canonicalUrl: 'https://bizflow.com/categorias/iot-industrial',
+        socialImageUrl: '/images/og/iot-industrial.jpg'
+      },
+      { 
+        name: 'Mantenimiento', 
+        description: 'Estrategias de mantenimiento predictivo y preventivo',
+        metaTitle: 'Mantenimiento Predictivo y Preventivo | Bizflow',
+        metaDescription: 'Estrategias avanzadas de mantenimiento predictivo y preventivo para optimizar sus operaciones industriales.',
+        metaKeywords: 'mantenimiento predictivo, mantenimiento preventivo, optimización operativa',
+        indexable: true,
+        canonicalUrl: 'https://bizflow.com/categorias/mantenimiento',
+        socialImageUrl: '/images/og/mantenimiento.jpg'
+      },
+      { 
+        name: 'Automatización', 
+        description: 'Procesos de automatización industrial',
+        metaTitle: 'Automatización de Procesos Industriales | Bizflow',
+        metaDescription: 'Soluciones de automatización para procesos industriales que aumentan la eficiencia y reducen los costos operativos.',
+        metaKeywords: 'automatización industrial, robótica, procesos automatizados',
+        indexable: true,
+        canonicalUrl: 'https://bizflow.com/categorias/automatizacion',
+        socialImageUrl: '/images/og/automatizacion.jpg'
+      },
+      { 
+        name: 'Ciberseguridad', 
+        description: 'Seguridad en entornos industriales',
+        metaTitle: 'Ciberseguridad Industrial | Bizflow',
+        metaDescription: 'Proteja sus activos industriales con estrategias avanzadas de ciberseguridad para la industria 4.0.',
+        metaKeywords: 'ciberseguridad industrial, seguridad OT, protección industrial',
+        indexable: true,
+        canonicalUrl: 'https://bizflow.com/categorias/ciberseguridad',
+        socialImageUrl: '/images/og/ciberseguridad.jpg'
+      },
+      { 
+        name: 'Analítica', 
+        description: 'Análisis de datos y Business Intelligence',
+        metaTitle: 'Analítica Industrial y Business Intelligence | Bizflow',
+        metaDescription: 'Transforme sus datos industriales en insights accionables con soluciones avanzadas de analítica y BI.',
+        metaKeywords: 'analítica industrial, business intelligence, big data, insights',
+        indexable: true,
+        canonicalUrl: 'https://bizflow.com/categorias/analitica',
+        socialImageUrl: '/images/og/analitica.jpg'
+      }
     ];
 
     const savedCategories: Category[] = [];
@@ -72,7 +126,13 @@ export const seedDatabase = async (): Promise<void> => {
       const category = categoryRepository.create({
         name: cat.name,
         slug: slugify(cat.name),
-        description: cat.description
+        description: cat.description,
+        metaTitle: cat.metaTitle,
+        metaDescription: cat.metaDescription,
+        metaKeywords: cat.metaKeywords,
+        indexable: cat.indexable,
+        canonicalUrl: cat.canonicalUrl,
+        socialImageUrl: cat.socialImageUrl
       });
       const savedCategory = await categoryRepository.save(category);
       savedCategories.push(savedCategory);
@@ -109,7 +169,23 @@ export const seedDatabase = async (): Promise<void> => {
         publishedAt: new Date('2023-03-15'),
         featuredImageUrl: '/images/blog/digital-transformation.svg',
         categoryId: savedCategories[0].id,
-        authorId: author1.id
+        authorId: author1.id,
+        metaTitle: 'Transformación Digital en la Industria 4.0: Guía Completa',
+        metaDescription: 'Aprenda cómo implementar la transformación digital en su empresa industrial. Beneficios, pasos y casos de éxito en la industria 4.0.',
+        metaKeywords: 'transformación digital, industria 4.0, digitalización, eficiencia operativa',
+        indexable: true,
+        canonicalUrl: 'https://bizflow.com/blog/transformacion-digital-industria-4-0',
+        structuredData: {
+          "@context": "https://schema.org",
+          "@type": "BlogPosting",
+          "headline": "Transformación Digital en la Industria 4.0",
+          "datePublished": "2023-03-15",
+          "author": {
+            "@type": "Person",
+            "name": "Carlos Rodríguez"
+          }
+        },
+        socialImageUrl: '/images/og/transformacion-digital-industria-4-0.jpg'
       },
       {
         title: 'Implementación de IoT en Entornos Industriales',
@@ -145,7 +221,23 @@ export const seedDatabase = async (): Promise<void> => {
         publishedAt: new Date('2023-02-28'),
         featuredImageUrl: '/images/blog/industrial-iot.svg',
         categoryId: savedCategories[1].id,
-        authorId: author2.id
+        authorId: author2.id,
+        metaTitle: 'Implementación de IoT Industrial: Estrategias y Beneficios',
+        metaDescription: 'Guía práctica para implementar Internet de las Cosas en entornos industriales. Descubra los beneficios y mejores prácticas para su empresa.',
+        metaKeywords: 'IoT industrial, internet de las cosas, sensores, monitoreo en tiempo real',
+        indexable: true,
+        canonicalUrl: 'https://bizflow.com/blog/implementacion-iot-entornos-industriales',
+        structuredData: {
+          "@context": "https://schema.org",
+          "@type": "BlogPosting",
+          "headline": "Implementación de IoT en Entornos Industriales",
+          "datePublished": "2023-02-28",
+          "author": {
+            "@type": "Person",
+            "name": "María González"
+          }
+        },
+        socialImageUrl: '/images/og/implementacion-iot-industrial.jpg'
       },
       {
         title: 'Mantenimiento Predictivo: El Futuro de la Industria',
