@@ -185,7 +185,10 @@ type Post {
   createdAt: DateTimeISO!
   cta: CTA
   ctaId: String
+  customMetadata: JSON
   excerpt: String!
+  featuredImageAlt: String
+  featuredImageCaption: String
   featuredImageUrl: String
   id: ID!
   indexable: Boolean
@@ -194,8 +197,10 @@ type Post {
   metaTitle: String
   metadata: String
   publishedAt: DateTimeISO
+  readingTime: Float
   relatedPosts: [Post!]
   slug: String!
+  socialImageAlt: String
   socialImageUrl: String
   status: String!
   structuredData: JSON
@@ -221,14 +226,19 @@ input PostInput {
   canonicalUrl: String
   categoryId: String
   content: String!
+  customMetadata: JSON
   excerpt: String!
+  featuredImageAlt: String
+  featuredImageCaption: String
   featuredImageUrl: String
   indexable: Boolean = true
   metaDescription: String
   metaKeywords: String
   metaTitle: String
+  readingTime: Float
   relatedPostIds: [String!]
   slug: String
+  socialImageAlt: String
   socialImageUrl: String
   status: PostStatus = DRAFT
   structuredData: JSON
@@ -259,15 +269,20 @@ input PostUpdateInput {
   canonicalUrl: String
   categoryId: String
   content: String
+  customMetadata: JSON
   excerpt: String
+  featuredImageAlt: String
+  featuredImageCaption: String
   featuredImageUrl: String
   indexable: Boolean
   metaDescription: String
   metaKeywords: String
   metaTitle: String
   publishedAt: DateTimeISO
+  readingTime: Float
   relatedPostIds: [String!]
   slug: String
+  socialImageAlt: String
   socialImageUrl: String
   status: PostStatus
   structuredData: JSON
