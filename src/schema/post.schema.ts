@@ -1,6 +1,35 @@
-import { InputType, Field } from 'type-graphql';
+import { InputType, Field, ObjectType, registerEnumType } from 'type-graphql';
 import { Length, MaxLength, MinLength, IsOptional, IsUUID, IsArray, IsBoolean, IsUrl } from 'class-validator';
 import { GraphQLJSON } from 'graphql-type-json';
+import { Post } from '../models/Post';
+import { PaginationInput, SortInput, PageInfo, DateFilterInput, TextFilterInput } from './common.schema';
+
+// Enum para los campos por los que se puede ordenar
+export enum PostSortField {
+  TITLE = 'title',
+  CREATED_AT = 'createdAt',
+  UPDATED_AT = 'updatedAt',
+  PUBLISHED_AT = 'publishedAt'
+}
+
+// Registrar el enum para GraphQL
+registerEnumType(PostSortField, {
+  name: 'PostSortField',
+  description: 'Campos por los que se pueden ordenar los posts',
+});
+
+// Enum para los estados de post
+export enum PostStatus {
+  DRAFT = 'draft',
+  PUBLISHED = 'published',
+  ARCHIVED = 'archived'
+}
+
+// Registrar el enum para GraphQL
+registerEnumType(PostStatus, {
+  name: 'PostStatus',
+  description: 'Estados posibles de un post',
+});
 
 @InputType()
 export class PostInput {
@@ -19,9 +48,9 @@ export class PostInput {
   @MinLength(20, { message: 'El contenido debe tener al menos 20 caracteres' })
   content: string;
 
-  @Field({ nullable: true })
+  @Field(() => PostStatus, { nullable: true })
   @IsOptional()
-  status?: string = 'draft';
+  status?: PostStatus = PostStatus.DRAFT;
 
   @Field({ nullable: true })
   @IsOptional()
@@ -97,9 +126,9 @@ export class PostUpdateInput {
   @MinLength(20, { message: 'El contenido debe tener al menos 20 caracteres' })
   content?: string;
 
-  @Field({ nullable: true })
+  @Field(() => PostStatus, { nullable: true })
   @IsOptional()
-  status?: string;
+  status?: PostStatus;
 
   @Field({ nullable: true })
   @IsOptional()
@@ -151,4 +180,59 @@ export class PostUpdateInput {
   @IsOptional()
   @IsUrl({}, { message: 'La URL de la imagen social debe ser una URL válida' })
   socialImageUrl?: string;
+}
+
+@InputType()
+export class PostFilterInput {
+  @Field(() => TextFilterInput, { nullable: true })
+  @IsOptional()
+  title?: TextFilterInput;
+
+  @Field(() => TextFilterInput, { nullable: true })
+  @IsOptional()
+  content?: TextFilterInput;
+
+  @Field(() => [String], { nullable: true })
+  @IsOptional()
+  categoryIds?: string[];
+
+  @Field(() => [String], { nullable: true })
+  @IsOptional()
+  authorIds?: string[];
+
+  @Field(() => PostStatus, { nullable: true })
+  @IsOptional()
+  status?: PostStatus;
+
+  @Field(() => DateFilterInput, { nullable: true })
+  @IsOptional()
+  publishedAt?: DateFilterInput;
+
+  @Field(() => DateFilterInput, { nullable: true })
+  @IsOptional()
+  createdAt?: DateFilterInput;
+
+  @Field(() => Boolean, { nullable: true })
+  @IsOptional()
+  featured?: boolean;
+
+  @Field(() => Boolean, { nullable: true })
+  @IsOptional()
+  indexable?: boolean;
+}
+
+@InputType()
+export class PostSortInput extends SortInput {
+  @Field(() => PostSortField)
+  @IsOptional()
+  field: PostSortField = PostSortField.PUBLISHED_AT;
+}
+
+@ObjectType()
+export class PaginatedPosts {
+  @Field(() => [Post])
+  items: Post[];
+
+  @Field(() => PageInfo)
+  pageInfo: PageInfo;
 } 

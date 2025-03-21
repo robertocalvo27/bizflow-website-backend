@@ -1,5 +1,18 @@
-import { InputType, Field } from 'type-graphql';
+import { InputType, Field, ObjectType, registerEnumType } from 'type-graphql';
 import { Length, MaxLength, IsOptional, IsBoolean, IsUrl } from 'class-validator';
+import { Category } from '../models/Category';
+import { SortInput, PageInfo, TextFilterInput } from './common.schema';
+
+export enum CategorySortField {
+  NAME = 'name',
+  CREATED_AT = 'createdAt',
+  UPDATED_AT = 'updatedAt'
+}
+
+registerEnumType(CategorySortField, {
+  name: 'CategorySortField',
+  description: 'Campos por los que se puede ordenar las categorías',
+});
 
 @InputType()
 export class CategoryInput {
@@ -88,4 +101,34 @@ export class CategoryUpdateInput {
   @IsOptional()
   @IsUrl({}, { message: 'La URL de la imagen social debe ser una URL válida' })
   socialImageUrl?: string;
+}
+
+@InputType()
+export class CategoryFilterInput {
+  @Field(() => TextFilterInput, { nullable: true })
+  @IsOptional()
+  name?: TextFilterInput;
+  
+  @Field(() => TextFilterInput, { nullable: true })
+  @IsOptional()
+  description?: TextFilterInput;
+  
+  @Field(() => Boolean, { nullable: true })
+  @IsOptional()
+  indexable?: boolean;
+}
+
+@InputType()
+export class CategorySortInput extends SortInput {
+  @Field(() => CategorySortField)
+  field: CategorySortField = CategorySortField.NAME;
+}
+
+@ObjectType()
+export class PaginatedCategories {
+  @Field(() => [Category])
+  items: Category[];
+  
+  @Field(() => PageInfo)
+  pageInfo: PageInfo;
 } 

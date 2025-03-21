@@ -1,11 +1,19 @@
 import { Resolver, Query, Mutation, Arg, Ctx, UseMiddleware, Int } from 'type-graphql';
 import { Post } from '../models/Post';
-import { PostInput, PostUpdateInput } from '../schema/post.schema';
+import { 
+  PostInput, 
+  PostUpdateInput, 
+  PaginatedPosts, 
+  PostFilterInput,
+  PostSortInput,
+  PostStatus
+} from '../schema/post.schema';
+import { PaginationInput } from '../schema/common.schema';
 import { AppDataSource } from '../database/data-source';
 import { isAuth } from '../middleware/auth';
 import { MyContext } from '../middleware/auth';
 import { slugify } from '../utils/slugify';
-import { In } from 'typeorm';
+import { In, Like, Between, IsNull, Not, FindOptionsWhere, FindOptionsOrder } from 'typeorm';
 
 @Resolver()
 export class PostResolver {
@@ -19,24 +27,137 @@ export class PostResolver {
     });
   }
 
+  @Query(() => PaginatedPosts)
+  async paginatedPosts(
+    @Arg('pagination', { nullable: true }) pagination?: PaginationInput,
+    @Arg('filter', { nullable: true }) filter?: PostFilterInput,
+    @Arg('sort', { nullable: true }) sort?: PostSortInput
+  ): Promise<PaginatedPosts> {
+    const { offset = 0, limit = 10 } = pagination || {};
+    const sortField = sort?.field || 'publishedAt';
+    const sortOrder = sort?.order || 'DESC';
+    
+    // Construir el objeto de condiciones where
+    const where: FindOptionsWhere<Post> = {};
+    
+    // Aplicar filtros si están presentes
+    if (filter) {
+      // Filtrar por título
+      if (filter.title) {
+        if (filter.title.contains) {
+          where.title = Like(`%${filter.title.contains}%`);
+        } else if (filter.title.startsWith) {
+          where.title = Like(`${filter.title.startsWith}%`);
+        } else if (filter.title.endsWith) {
+          where.title = Like(`%${filter.title.endsWith}`);
+        } else if (filter.title.equals) {
+          where.title = filter.title.equals;
+        }
+      }
+      
+      // Filtrar por contenido
+      if (filter.content?.contains) {
+        where.content = Like(`%${filter.content.contains}%`);
+      }
+      
+      // Filtrar por categorías
+      if (filter.categoryIds && filter.categoryIds.length > 0) {
+        where.categoryId = In(filter.categoryIds);
+      }
+      
+      // Filtrar por autores
+      if (filter.authorIds && filter.authorIds.length > 0) {
+        where.authorId = In(filter.authorIds);
+      }
+      
+      // Filtrar por estado
+      if (filter.status) {
+        where.status = filter.status;
+      }
+      
+      // Filtrar por fecha de publicación
+      if (filter.publishedAt) {
+        if (filter.publishedAt.from && filter.publishedAt.to) {
+          where.publishedAt = Between(filter.publishedAt.from, filter.publishedAt.to);
+        } else if (filter.publishedAt.from) {
+          where.publishedAt = Between(filter.publishedAt.from, new Date());
+        }
+      }
+      
+      // Filtrar por fecha de creación
+      if (filter.createdAt) {
+        if (filter.createdAt.from && filter.createdAt.to) {
+          where.createdAt = Between(filter.createdAt.from, filter.createdAt.to);
+        } else if (filter.createdAt.from) {
+          where.createdAt = Between(filter.createdAt.from, new Date());
+        }
+      }
+      
+      // Filtrar por indexable
+      if (filter.indexable !== undefined) {
+        where.indexable = filter.indexable;
+      }
+    }
+    
+    // Construir el objeto de ordenamiento
+    const order: FindOptionsOrder<Post> = {
+      [sortField]: sortOrder,
+    };
+    
+    // Contar el total de items que coinciden con el filtro
+    const totalItems = await this.postRepository.count({ where });
+    
+    // Calcular info de paginación
+    const totalPages = Math.ceil(totalItems / limit);
+    const currentPage = Math.floor(offset / limit) + 1;
+    
+    // Obtener los items para la página actual
+    const items = await this.postRepository.find({
+      where,
+      order,
+      skip: offset,
+      take: limit,
+      relations: ['author', 'category', 'relatedPosts'],
+    });
+    
+    return {
+      items,
+      pageInfo: {
+        totalItems,
+        totalPages,
+        currentPage,
+        hasNextPage: currentPage < totalPages,
+        hasPreviousPage: currentPage > 1,
+      },
+    };
+  }
+
   @Query(() => [Post])
   async publishedPosts(
-    @Arg('limit', () => Int, { nullable: true }) limit?: number,
-    @Arg('offset', () => Int, { nullable: true }) offset?: number
+    @Arg('pagination', { nullable: true }) pagination?: PaginationInput,
+    @Arg('sort', { nullable: true }) sort?: PostSortInput
   ): Promise<Post[]> {
+    const { offset = 0, limit = 10 } = pagination || {};
+    const sortField = sort?.field || 'publishedAt';
+    const sortOrder = sort?.order || 'DESC';
+    
+    const order: FindOptionsOrder<Post> = {
+      [sortField]: sortOrder,
+    };
+    
     return this.postRepository.find({
-      where: { status: 'published' },
+      where: { status: PostStatus.PUBLISHED },
       relations: ['author', 'category'],
-      order: { publishedAt: 'DESC' },
-      skip: offset || 0,
-      take: limit || undefined,
+      order,
+      skip: offset,
+      take: limit,
     });
   }
 
   @Query(() => Int)
   async countPublishedPosts(): Promise<number> {
     return this.postRepository.count({
-      where: { status: 'published' },
+      where: { status: PostStatus.PUBLISHED },
     });
   }
 
@@ -56,38 +177,110 @@ export class PostResolver {
     });
   }
 
-  @Query(() => [Post])
+  @Query(() => PaginatedPosts)
   async postsByCategory(
     @Arg('categoryId') categoryId: string,
-    @Arg('limit', () => Int, { nullable: true }) limit?: number,
-    @Arg('offset', () => Int, { nullable: true }) offset?: number
-  ): Promise<Post[]> {
-    return this.postRepository.find({
-      where: { categoryId, status: 'published' },
-      relations: ['author', 'category'],
-      order: { publishedAt: 'DESC' },
-      skip: offset || 0,
-      take: limit || undefined,
+    @Arg('pagination', { nullable: true }) pagination?: PaginationInput,
+    @Arg('sort', { nullable: true }) sort?: PostSortInput
+  ): Promise<PaginatedPosts> {
+    const { offset = 0, limit = 10 } = pagination || {};
+    const sortField = sort?.field || 'publishedAt';
+    const sortOrder = sort?.order || 'DESC';
+    
+    const order: FindOptionsOrder<Post> = {
+      [sortField]: sortOrder,
+    };
+    
+    // Contar el total de items
+    const totalItems = await this.postRepository.count({
+      where: { categoryId, status: PostStatus.PUBLISHED },
     });
+    
+    // Calcular info de paginación
+    const totalPages = Math.ceil(totalItems / limit);
+    const currentPage = Math.floor(offset / limit) + 1;
+    
+    // Obtener los items para la página actual
+    const items = await this.postRepository.find({
+      where: { categoryId, status: PostStatus.PUBLISHED },
+      relations: ['author', 'category'],
+      order,
+      skip: offset,
+      take: limit,
+    });
+    
+    return {
+      items,
+      pageInfo: {
+        totalItems,
+        totalPages,
+        currentPage,
+        hasNextPage: currentPage < totalPages,
+        hasPreviousPage: currentPage > 1,
+      },
+    };
   }
 
-  @Query(() => [Post])
+  @Query(() => PaginatedPosts)
   async searchPosts(
     @Arg('term') term: string,
-    @Arg('limit', () => Int, { nullable: true }) limit?: number,
-    @Arg('offset', () => Int, { nullable: true }) offset?: number
-  ): Promise<Post[]> {
-    return this.postRepository
-      .createQueryBuilder('post')
+    @Arg('pagination', { nullable: true }) pagination?: PaginationInput,
+    @Arg('filter', { nullable: true }) filter?: PostFilterInput,
+    @Arg('sort', { nullable: true }) sort?: PostSortInput
+  ): Promise<PaginatedPosts> {
+    const { offset = 0, limit = 10 } = pagination || {};
+    const sortField = sort?.field || 'publishedAt';
+    const sortOrder = sort?.order || 'DESC';
+    
+    // Iniciar un query builder
+    const queryBuilder = this.postRepository.createQueryBuilder('post')
       .leftJoinAndSelect('post.author', 'author')
       .leftJoinAndSelect('post.category', 'category')
-      .where('post.status = :status', { status: 'published' })
-      .andWhere('(post.title ILIKE :term OR post.excerpt ILIKE :term OR post.content ILIKE :term)', 
-        { term: `%${term}%` })
-      .orderBy('post.publishedAt', 'DESC')
-      .skip(offset || 0)
-      .take(limit || 10)
-      .getMany();
+      .where('post.status = :status', { status: PostStatus.PUBLISHED })
+      .andWhere('(post.title ILIKE :term OR post.excerpt ILIKE :term OR post.content ILIKE :term OR post.metaKeywords ILIKE :term)', 
+        { term: `%${term}%` });
+    
+    // Aplicar filtros adicionales si están presentes
+    if (filter) {
+      if (filter.categoryIds && filter.categoryIds.length > 0) {
+        queryBuilder.andWhere('post.categoryId IN (:...categoryIds)', { categoryIds: filter.categoryIds });
+      }
+      
+      if (filter.authorIds && filter.authorIds.length > 0) {
+        queryBuilder.andWhere('post.authorId IN (:...authorIds)', { authorIds: filter.authorIds });
+      }
+      
+      if (filter.indexable !== undefined) {
+        queryBuilder.andWhere('post.indexable = :indexable', { indexable: filter.indexable });
+      }
+    }
+    
+    // Ordenar resultados
+    queryBuilder.orderBy(`post.${sortField}`, sortOrder);
+    
+    // Contar el total de resultados
+    const totalItems = await queryBuilder.getCount();
+    
+    // Aplicar paginación
+    queryBuilder.skip(offset).take(limit);
+    
+    // Ejecutar la consulta
+    const items = await queryBuilder.getMany();
+    
+    // Calcular información de paginación
+    const totalPages = Math.ceil(totalItems / limit);
+    const currentPage = Math.floor(offset / limit) + 1;
+    
+    return {
+      items,
+      pageInfo: {
+        totalItems,
+        totalPages,
+        currentPage,
+        hasNextPage: currentPage < totalPages,
+        hasPreviousPage: currentPage > 1,
+      },
+    };
   }
 
   @Mutation(() => Post)
@@ -166,7 +359,7 @@ export class PostResolver {
     }
 
     // Si se cambia el estado a 'published' y no tenía fecha de publicación, asignarla
-    if (input.status === 'published' && post.status !== 'published') {
+    if (input.status === PostStatus.PUBLISHED && post.status !== PostStatus.PUBLISHED) {
       input.publishedAt = new Date();
     }
 
