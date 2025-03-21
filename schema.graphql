@@ -76,6 +76,13 @@ input CategoryUpdateInput {
   socialImageUrl: String
 }
 
+"""Tipo de contenido a buscar"""
+enum ContentType {
+  ALL
+  POST
+  VIDEO
+}
+
 input DateFilterInput {
   from: DateTimeISO
   to: DateTimeISO
@@ -104,16 +111,13 @@ type Mutation {
   createCTA(backgroundColor: String, buttonColor: String, buttonText: String!, description: String!, destination: String!, openInNewTab: Boolean = false, textColor: String, title: String!, type: String!): CTA!
   createCategory(input: CategoryInput!): Category!
   createPost(input: PostInput!): Post!
-  createResource(input: ResourceInput!): Resource!
   createTag(input: TagInput!): Tag!
   createVideo(categoryId: String!, description: String, duration: Float, featured: Boolean! = false, postIds: [String!], provider: String!, thumbnailUrl: String!, title: String!, transcription: String, videoId: String!, videoUrl: String!): Video!
   deleteCTA(id: String!): Boolean!
   deleteCategory(id: String!): Boolean!
   deletePost(id: String!): Boolean!
-  deleteResource(id: String!): Boolean!
   deleteTag(id: String!): Boolean!
   deleteVideo(id: String!): Boolean!
-  incrementDownloadCount(id: String!): Resource!
   login(email: String!, password: String!): LoginResponse!
   register(input: UserInput!): User!
   removeCTAFromPost(postId: String!): Post!
@@ -123,7 +127,6 @@ type Mutation {
   updateCTA(backgroundColor: String, buttonColor: String, buttonText: String, description: String, destination: String, id: String!, openInNewTab: Boolean, textColor: String, title: String, type: String): CTA!
   updateCategory(id: String!, input: CategoryUpdateInput!): Category!
   updatePost(id: String!, input: PostUpdateInput!): Post!
-  updateResource(id: String!, input: ResourceUpdateInput!): Resource!
   updateTag(id: String!, input: TagUpdateInput!): Tag
   updateUser(id: String!, input: UserUpdateInput!): User!
   updateVideo(categoryId: String, description: String, duration: Float, featured: Boolean, id: String!, postIds: [String!], provider: String, thumbnailUrl: String, title: String, transcription: String, videoId: String, videoUrl: String): Video!
@@ -152,11 +155,6 @@ type PaginatedCategories {
 
 type PaginatedPosts {
   items: [Post!]!
-  pageInfo: PageInfo!
-}
-
-type PaginatedResources {
-  items: [Resource!]!
   pageInfo: PageInfo!
 }
 
@@ -312,13 +310,12 @@ type Query {
   category(id: String!): Category
   categoryBySlug(slug: String!): Category
   countPublishedPosts: Int!
-  featuredResources: [Resource!]!
   featuredVideos: [Video!]!
   getCTA(id: String!): CTA
   getCTAs(skip: Int! = 0, take: Int! = 10): PaginatedCTAResponse!
+  getRelatedContent(input: RelatedContentInput!): RelatedContent!
   paginatedCategories(filter: CategoryFilterInput, pagination: PaginationInput, sort: CategorySortInput): PaginatedCategories!
   paginatedPosts(filter: PostFilterInput, pagination: PaginationInput, sort: PostSortInput): PaginatedPosts!
-  paginatedResources(filter: ResourceFilterInput, pagination: PaginationInput, sort: ResourceSortInput): PaginatedResources!
   paginatedTags(filter: TagFilterInput, pagination: PaginationInput): PaginatedTagResponse!
   paginatedUsers(filter: UserFilterInput, pagination: PaginationInput, sort: UserSortInput): PaginatedUsers!
   paginatedVideos(limit: Int! = 10, page: Int! = 1): PaginatedVideos!
@@ -326,12 +323,8 @@ type Query {
   postBySlug(slug: String!): Post
   posts: [Post!]!
   postsByCategory(categoryId: String!, pagination: PaginationInput, sort: PostSortInput): PaginatedPosts!
-  publicResources(filter: ResourceFilterInput, pagination: PaginationInput, sort: ResourceSortInput): [Resource!]!
   publishedPosts(pagination: PaginationInput, sort: PostSortInput): [Post!]!
-  resource(id: String!): Resource
-  resourceBySlug(slug: String!): Resource
-  resources: [Resource!]!
-  resourcesByCategory(categoryId: String!, pagination: PaginationInput, sort: ResourceSortInput): [Resource!]!
+  search(input: SearchInput!, pagination: PaginationInput): SearchResults!
   searchCategories(pagination: PaginationInput, sort: CategorySortInput, term: String!): PaginatedCategories!
   searchPosts(filter: PostFilterInput, pagination: PaginationInput, sort: PostSortInput, term: String!): PaginatedPosts!
   searchTags(term: String!): [Tag!]!
@@ -347,91 +340,43 @@ type Query {
   videosByPost(page: Int! = 1, perPage: Int! = 10, postId: String!): PaginatedVideos!
 }
 
-type Resource {
-  category: Category!
-  categoryId: String!
+type RelatedContent {
+  items: [SearchResult!]!
+  total: Int!
+}
+
+input RelatedContentInput {
+  contentId: String!
+  excludeIds: [String!]
+  limit: Int! = 5
+  type: ContentType!
+}
+
+input SearchInput {
+  categories: [String!]
+  fromDate: DateTimeISO
+  query: String
+  sortBy: String
+  sortOrder: SortOrder! = DESC
+  tags: [String!]
+  toDate: DateTimeISO
+  type: ContentType! = ALL
+}
+
+type SearchResult {
   createdAt: DateTimeISO!
-  description: String!
-  downloadCount: Float!
-  downloadInstructions: String
-  featured: Boolean!
-  fileSize: Float!
-  fileUrl: String!
-  id: ID!
-  isPublic: Boolean!
-  metadata: JSON
-  resourceType: String!
-  slug: String!
-  thumbnailUrl: String
-  title: String!
-  updatedAt: DateTimeISO!
-  uploader: User!
-  uploaderId: String!
+  post: Post
+  relevanceScore: Int!
+  type: String!
+  video: Video
 }
 
-input ResourceFilterInput {
-  categoryIds: [String!]
-  description: TextFilterInput
-  featured: Boolean
-  isPublic: Boolean
-  resourceTypes: [ResourceType!]
-  title: TextFilterInput
-  uploaderIds: [String!]
-}
-
-input ResourceInput {
-  categoryId: String!
-  description: String!
-  downloadInstructions: String
-  featured: Boolean = false
-  fileSize: Float!
-  fileUrl: String!
-  isPublic: Boolean = true
-  metadata: JSON
-  resourceType: ResourceType!
-  slug: String
-  thumbnailUrl: String
-  title: String!
-  uploaderId: String
-}
-
-"""Campos por los que se pueden ordenar los recursos"""
-enum ResourceSortField {
-  CREATED_AT
-  DOWNLOAD_COUNT
-  FILE_SIZE
-  TITLE
-  UPDATED_AT
-}
-
-input ResourceSortInput {
-  field: ResourceSortField! = CREATED_AT
-  order: SortOrder! = DESC
-}
-
-"""Tipos de recursos disponibles"""
-enum ResourceType {
-  DOC
-  IMAGE
-  OTHER
-  PDF
-  XLSX
-  ZIP
-}
-
-input ResourceUpdateInput {
-  categoryId: String
-  description: String
-  downloadInstructions: String
-  featured: Boolean
-  fileSize: Float
-  fileUrl: String
-  isPublic: Boolean
-  metadata: JSON
-  resourceType: ResourceType
-  slug: String
-  thumbnailUrl: String
-  title: String
+type SearchResults {
+  hasMore: Boolean!
+  items: [SearchResult!]!
+  page: Int!
+  pages: Int!
+  total: Int!
 }
 
 """Dirección de ordenamiento (ascendente o descendente)"""
