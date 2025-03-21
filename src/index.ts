@@ -16,6 +16,10 @@ import { config } from 'dotenv';
 import { verify } from 'jsonwebtoken';
 import { User } from './models/User';
 import { AuthContext } from './types/context';
+import { loggerMiddleware } from './utils/logger';
+import { graphqlMetricsMiddleware } from './utils/metrics';
+import monitoringRoutes from './routes/monitoring';
+import path from 'path';
 
 // Cargar variables de entorno
 config();
@@ -39,6 +43,20 @@ async function bootstrap() {
   // Configurar middleware
   app.use(cors());
   app.use(express.json());
+
+  // Configurar middleware de logging
+  app.use(loggerMiddleware);
+
+  // Configurar rutas de monitoreo
+  app.use('/monitoring', monitoringRoutes);
+
+  // Servir archivos estáticos
+  app.use(express.static(path.join(__dirname, 'public')));
+
+  // Ruta para el dashboard
+  app.get('/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+  });
 
   // Construir el schema GraphQL
   const schema = await buildSchema({
@@ -101,6 +119,20 @@ async function bootstrap() {
 
       return context;
     },
+    plugins: [
+      {
+        requestDidStart: () => ({
+          willSendResponse: async (requestContext) => {
+            // Actualizar métricas después de cada operación
+            const operationName = requestContext.operationName || 'anonymous';
+            metrics.graphqlOperations.inc({ 
+              operation: operationName, 
+              type: requestContext.operation?.operation || 'unknown' 
+            });
+          },
+        }),
+      },
+    ],
   });
 
   // Iniciar Apollo Server

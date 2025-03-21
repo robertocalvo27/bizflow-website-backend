@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bizflow Monitoring Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">Bizflow Monitoring Dashboard</span>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <!-- Health Status -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        Health Status
+                    </div>
+                    <div class="card-body" id="health-status">
+                        Loading...
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Metrics -->
+            <div class="col-md-8 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        System Metrics
+                    </div>
+                    <div class="card-body">
+                        <canvas id="system-metrics"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- GraphQL Operations -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        GraphQL Operations
+                    </div>
+                    <div class="card-body">
+                        <canvas id="graphql-operations"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Rate -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        Error Rate
+                    </div>
+                    <div class="card-body">
+                        <canvas id="error-rate"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs Table -->
+        <div class="card mb-4">
+            <div class="card-header">
+                Recent Logs
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table" id="logs-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Level</th>
+                                <th>Message</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="3">Loading logs...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Función para actualizar el estado de salud
+        async function updateHealthStatus() {
+            try {
+                const response = await fetch('/monitoring/health');
+                const data = await response.json();
+                const healthStatus = document.getElementById('health-status');
+                healthStatus.innerHTML = `
+                    <h3 class="text-success">System Online</h3>
+                    <p>Uptime: ${Math.floor(data.uptime / 3600)} hours</p>
+                    <p>Last checked: ${new Date(data.timestamp).toLocaleString()}</p>
+                `;
+            } catch (error) {
+                document.getElementById('health-status').innerHTML = `
+                    <h3 class="text-danger">System Offline</h3>
+                    <p>Error: ${error.message}</p>
+                `;
+            }
+        }
+
+        // Función para actualizar las métricas del sistema
+        async function updateSystemMetrics() {
+            try {
+                const response = await fetch('/monitoring/status');
+                const data = await response.json();
+                
+                const ctx = document.getElementById('system-metrics').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: Array(10).fill('').map((_, i) => `${i} min ago`),
+                        datasets: [{
+                            label: 'CPU Load',
+                            data: data.system.loadavg,
+                            borderColor: 'rgb(75, 192, 192)',
+                            tension: 0.1
+                        }]
+                    }
+                });
+            } catch (error) {
+                console.error('Error updating system metrics:', error);
+            }
+        }
+
+        // Función para actualizar las operaciones GraphQL
+        async function updateGraphQLOperations() {
+            try {
+                const response = await fetch('/monitoring/metrics');
+                const data = await response.text();
+                const matches = data.match(/graphql_operations_total{.*?} (\d+)/g);
+                
+                const operations = matches ? matches.map(m => ({
+                    name: m.match(/operation="(.*?)"/)[1],
+                    value: parseInt(m.match(/} (\d+)/)[1])
+                })) : [];
+
+                const ctx = document.getElementById('graphql-operations').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: operations.map(op => op.name),
+                        datasets: [{
+                            label: 'Total Operations',
+                            data: operations.map(op => op.value),
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgb(54, 162, 235)',
+                            borderWidth: 1
+                        }]
+                    }
+                });
+            } catch (error) {
+                console.error('Error updating GraphQL operations:', error);
+            }
+        }
+
+        // Función para actualizar la tabla de logs
+        async function updateLogs() {
+            try {
+                const response = await fetch('/monitoring/logs');
+                const logs = await response.text();
+                const tbody = document.querySelector('#logs-table tbody');
+                tbody.innerHTML = logs.split('\n')
+                    .filter(line => line.trim())
+                    .slice(-10)
+                    .map(line => {
+                        const [timestamp, level, ...message] = line.split(' ');
+                        return `
+                            <tr>
+                                <td>${new Date(timestamp).toLocaleString()}</td>
+                                <td><span class="badge bg-${level.toLowerCase()}">${level}</span></td>
+                                <td>${message.join(' ')}</td>
+                            </tr>
+                        `;
+                    })
+                    .join('');
+            } catch (error) {
+                console.error('Error updating logs:', error);
+            }
+        }
+
+        // Actualizar datos cada 30 segundos
+        setInterval(() => {
+            updateHealthStatus();
+            updateSystemMetrics();
+            updateGraphQLOperations();
+            updateLogs();
+        }, 30000);
+
+        // Actualización inicial
+        updateHealthStatus();
+        updateSystemMetrics();
+        updateGraphQLOperations();
+        updateLogs();
+    </script>
+</body>
+</html> 
