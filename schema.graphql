@@ -19,6 +19,12 @@ type Category {
   updatedAt: DateTimeISO!
 }
 
+input CategoryFilterInput {
+  description: TextFilterInput
+  indexable: Boolean
+  name: TextFilterInput
+}
+
 input CategoryInput {
   canonicalUrl: String
   description: String
@@ -31,6 +37,18 @@ input CategoryInput {
   socialImageUrl: String
 }
 
+"""Campos por los que se puede ordenar las categorías"""
+enum CategorySortField {
+  CREATED_AT
+  NAME
+  UPDATED_AT
+}
+
+input CategorySortInput {
+  field: CategorySortField! = NAME
+  order: String! = "DESC"
+}
+
 input CategoryUpdateInput {
   canonicalUrl: String
   description: String
@@ -41,6 +59,11 @@ input CategoryUpdateInput {
   name: String
   slug: String
   socialImageUrl: String
+}
+
+input DateFilterInput {
+  from: DateTimeISO
+  to: DateTimeISO
 }
 
 """
@@ -67,6 +90,35 @@ type Mutation {
   register(input: UserInput!): User!
   updateCategory(id: String!, input: CategoryUpdateInput!): Category!
   updatePost(id: String!, input: PostUpdateInput!): Post!
+  updateUser(id: String!, input: UserUpdateInput!): User!
+}
+
+type PageInfo {
+  currentPage: Int!
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  totalItems: Int!
+  totalPages: Int!
+}
+
+type PaginatedCategories {
+  items: [Category!]!
+  pageInfo: PageInfo!
+}
+
+type PaginatedPosts {
+  items: [Post!]!
+  pageInfo: PageInfo!
+}
+
+type PaginatedUsers {
+  items: [User!]!
+  pageInfo: PageInfo!
+}
+
+input PaginationInput {
+  limit: Int = 10
+  offset: Int = 0
 }
 
 type Post {
@@ -94,6 +146,18 @@ type Post {
   updatedAt: DateTimeISO!
 }
 
+input PostFilterInput {
+  authorIds: [String!]
+  categoryIds: [String!]
+  content: TextFilterInput
+  createdAt: DateFilterInput
+  featured: Boolean
+  indexable: Boolean
+  publishedAt: DateFilterInput
+  status: PostStatus
+  title: TextFilterInput
+}
+
 input PostInput {
   authorId: String
   canonicalUrl: String
@@ -108,9 +172,29 @@ input PostInput {
   relatedPostIds: [String!]
   slug: String
   socialImageUrl: String
-  status: String = "draft"
+  status: PostStatus = DRAFT
   structuredData: JSON
   title: String!
+}
+
+"""Campos por los que se pueden ordenar los posts"""
+enum PostSortField {
+  CREATED_AT
+  PUBLISHED_AT
+  TITLE
+  UPDATED_AT
+}
+
+input PostSortInput {
+  field: PostSortField! = PUBLISHED_AT
+  order: String! = "DESC"
+}
+
+"""Estados posibles de un post"""
+enum PostStatus {
+  ARCHIVED
+  DRAFT
+  PUBLISHED
 }
 
 input PostUpdateInput {
@@ -127,7 +211,7 @@ input PostUpdateInput {
   relatedPostIds: [String!]
   slug: String
   socialImageUrl: String
-  status: String
+  status: PostStatus
   structuredData: JSON
   title: String
 }
@@ -135,15 +219,27 @@ input PostUpdateInput {
 type Query {
   categories: [Category!]!
   category(id: String!): Category
+  categoryBySlug(slug: String!): Category
   countPublishedPosts: Int!
+  paginatedCategories(filter: CategoryFilterInput, pagination: PaginationInput, sort: CategorySortInput): PaginatedCategories!
+  paginatedPosts(filter: PostFilterInput, pagination: PaginationInput, sort: PostSortInput): PaginatedPosts!
+  paginatedUsers(filter: UserFilterInput, pagination: PaginationInput, sort: UserSortInput): PaginatedUsers!
   post(id: String!): Post
   postBySlug(slug: String!): Post
   posts: [Post!]!
-  postsByCategory(categoryId: String!, limit: Int, offset: Int): [Post!]!
-  publishedPosts(limit: Int, offset: Int): [Post!]!
-  searchPosts(limit: Int, offset: Int, term: String!): [Post!]!
+  postsByCategory(categoryId: String!, pagination: PaginationInput, sort: PostSortInput): PaginatedPosts!
+  publishedPosts(pagination: PaginationInput, sort: PostSortInput): [Post!]!
+  searchCategories(pagination: PaginationInput, sort: CategorySortInput, term: String!): PaginatedCategories!
+  searchPosts(filter: PostFilterInput, pagination: PaginationInput, sort: PostSortInput, term: String!): PaginatedPosts!
   user(id: String!): User
   users: [User!]!
+}
+
+input TextFilterInput {
+  contains: String
+  endsWith: String
+  equals: String
+  startsWith: String
 }
 
 type User {
@@ -159,9 +255,40 @@ type User {
   updatedAt: DateTimeISO!
 }
 
+input UserFilterInput {
+  email: TextFilterInput
+  name: TextFilterInput
+  roles: [UserRole!]
+}
+
 input UserInput {
   email: String!
   name: String!
   password: String!
-  role: String
+  role: UserRole
+}
+
+"""Roles de usuario en el sistema"""
+enum UserRole {
+  ADMIN
+  AUTHOR
+  EDITOR
+}
+
+"""Campos por los que se puede ordenar los usuarios"""
+enum UserSortField {
+  CREATED_AT
+  EMAIL
+  NAME
+}
+
+input UserSortInput {
+  field: UserSortField! = NAME
+  order: String! = "DESC"
+}
+
+input UserUpdateInput {
+  name: String
+  password: String
+  role: UserRole
 }
