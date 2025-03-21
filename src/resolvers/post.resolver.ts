@@ -8,7 +8,7 @@ import {
   PostSortInput,
   PostStatus
 } from '../schema/post.schema';
-import { PaginationInput } from '../schema/common.schema';
+import { PaginationInput, SortOrder } from '../schema/common.schema';
 import { AppDataSource } from '../database/data-source';
 import { isAuth } from '../middleware/auth';
 import { MyContext } from '../middleware/auth';
@@ -23,7 +23,7 @@ export class PostResolver {
   async posts(): Promise<Post[]> {
     return this.postRepository.find({
       relations: ['author', 'category', 'relatedPosts'],
-      order: { createdAt: 'DESC' },
+      order: { createdAt: SortOrder.DESC },
     });
   }
 
@@ -35,7 +35,7 @@ export class PostResolver {
   ): Promise<PaginatedPosts> {
     const { offset = 0, limit = 10 } = pagination || {};
     const sortField = sort?.field || 'publishedAt';
-    const sortOrder = sort?.order || 'DESC';
+    const sortOrder = sort?.order || SortOrder.DESC;
     
     // Construir el objeto de condiciones where
     const where: FindOptionsWhere<Post> = {};
@@ -139,7 +139,7 @@ export class PostResolver {
   ): Promise<Post[]> {
     const { offset = 0, limit = 10 } = pagination || {};
     const sortField = sort?.field || 'publishedAt';
-    const sortOrder = sort?.order || 'DESC';
+    const sortOrder = sort?.order || SortOrder.DESC;
     
     const order: FindOptionsOrder<Post> = {
       [sortField]: sortOrder,
@@ -185,7 +185,7 @@ export class PostResolver {
   ): Promise<PaginatedPosts> {
     const { offset = 0, limit = 10 } = pagination || {};
     const sortField = sort?.field || 'publishedAt';
-    const sortOrder = sort?.order || 'DESC';
+    const sortOrder = sort?.order || SortOrder.DESC;
     
     const order: FindOptionsOrder<Post> = {
       [sortField]: sortOrder,
@@ -230,7 +230,7 @@ export class PostResolver {
   ): Promise<PaginatedPosts> {
     const { offset = 0, limit = 10 } = pagination || {};
     const sortField = sort?.field || 'publishedAt';
-    const sortOrder = sort?.order || 'DESC';
+    const sortOrder = sort?.order || SortOrder.DESC;
     
     // Iniciar un query builder
     const queryBuilder = this.postRepository.createQueryBuilder('post')

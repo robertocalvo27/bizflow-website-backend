@@ -46,7 +46,7 @@ enum CategorySortField {
 
 input CategorySortInput {
   field: CategorySortField! = NAME
-  order: String! = "DESC"
+  order: SortOrder! = DESC
 }
 
 input CategoryUpdateInput {
@@ -187,7 +187,7 @@ enum PostSortField {
 
 input PostSortInput {
   field: PostSortField! = PUBLISHED_AT
-  order: String! = "DESC"
+  order: SortOrder! = DESC
 }
 
 """Estados posibles de un post"""
@@ -233,6 +233,12 @@ type Query {
   searchPosts(filter: PostFilterInput, pagination: PaginationInput, sort: PostSortInput, term: String!): PaginatedPosts!
   user(id: String!): User
   users: [User!]!
+}
+
+"""Dirección de ordenamiento (ascendente o descendente)"""
+enum SortOrder {
+  ASC
+  DESC
 }
 
 input TextFilterInput {
@@ -284,7 +290,7 @@ enum UserSortField {
 
 input UserSortInput {
   field: UserSortField! = NAME
-  order: String! = "DESC"
+  order: SortOrder! = DESC
 }
 
 input UserUpdateInput {

@@ -1,5 +1,15 @@
-import { InputType, Field, Int, ObjectType } from 'type-graphql';
+import { InputType, Field, Int, ObjectType, registerEnumType } from 'type-graphql';
 import { IsOptional, Min, Max } from 'class-validator';
+
+export enum SortOrder {
+  ASC = "ASC",
+  DESC = "DESC"
+}
+
+registerEnumType(SortOrder, {
+  name: 'SortOrder',
+  description: 'Dirección de ordenamiento (ascendente o descendente)',
+});
 
 @InputType()
 export class PaginationInput {
@@ -20,9 +30,9 @@ export class SortInput {
   @Field()
   field: string;
 
-  @Field({ defaultValue: 'DESC' })
+  @Field(() => SortOrder, { defaultValue: SortOrder.DESC })
   @IsOptional()
-  order?: 'ASC' | 'DESC' = 'DESC';
+  order?: SortOrder = SortOrder.DESC;
 }
 
 @ObjectType()
