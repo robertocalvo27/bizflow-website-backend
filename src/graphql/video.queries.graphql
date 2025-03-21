@@ -1,0 +1,285 @@
+# Queries
+query GetVideos {
+  videos {
+    id
+    title
+    slug
+    thumbnailUrl
+    provider
+    duration
+    featured
+    createdAt
+    category {
+      id
+      name
+    }
+    author {
+      id
+      fullName
+    }
+  }
+}
+
+query GetPaginatedVideos($page: Int, $limit: Int) {
+  paginatedVideos(page: $page, limit: $limit) {
+    items {
+      id
+      title
+      slug
+      thumbnailUrl
+      provider
+      duration
+      featured
+      createdAt
+    }
+    meta {
+      currentPage
+      totalPages
+      itemsPerPage
+      totalItems
+      hasNextPage
+      hasPreviousPage
+    }
+  }
+}
+
+query GetVideoById($id: String!) {
+  video(id: $id) {
+    id
+    title
+    slug
+    description
+    videoUrl
+    thumbnailUrl
+    provider
+    videoId
+    duration
+    transcription
+    featured
+    createdAt
+    updatedAt
+    category {
+      id
+      name
+    }
+    author {
+      id
+      fullName
+    }
+    posts {
+      id
+      title
+      slug
+    }
+  }
+}
+
+query GetVideoBySlug($slug: String!) {
+  videoBySlug(slug: $slug) {
+    id
+    title
+    slug
+    description
+    videoUrl
+    thumbnailUrl
+    provider
+    videoId
+    duration
+    transcription
+    featured
+    createdAt
+    updatedAt
+    category {
+      id
+      name
+    }
+    author {
+      id
+      fullName
+    }
+    posts {
+      id
+      title
+      slug
+    }
+  }
+}
+
+query GetVideosByCategory($categoryId: String!, $page: Int, $limit: Int) {
+  videosByCategory(categoryId: $categoryId, page: $page, limit: $limit) {
+    items {
+      id
+      title
+      slug
+      thumbnailUrl
+      provider
+      duration
+      featured
+      createdAt
+    }
+    meta {
+      currentPage
+      totalPages
+      itemsPerPage
+      totalItems
+      hasNextPage
+      hasPreviousPage
+    }
+  }
+}
+
+query GetVideosByPost($postId: String!, $page: Int, $perPage: Int) {
+  videosByPost(postId: $postId, page: $page, perPage: $perPage) {
+    items {
+      id
+      title
+      slug
+      thumbnailUrl
+      provider
+      duration
+      featured
+      createdAt
+    }
+    meta {
+      currentPage
+      totalPages
+      itemsPerPage
+      totalItems
+      hasNextPage
+      hasPreviousPage
+    }
+  }
+}
+
+query GetFeaturedVideos {
+  featuredVideos {
+    id
+    title
+    slug
+    thumbnailUrl
+    provider
+    duration
+    createdAt
+    category {
+      id
+      name
+    }
+    author {
+      id
+      fullName
+    }
+  }
+}
+
+# Mutations
+mutation CreateVideo(
+  $title: String!
+  $videoUrl: String!
+  $thumbnailUrl: String!
+  $provider: String!
+  $videoId: String!
+  $categoryId: String!
+  $description: String
+  $duration: Float
+  $transcription: String
+  $featured: Boolean
+  $postIds: [String!]
+) {
+  createVideo(
+    title: $title
+    videoUrl: $videoUrl
+    thumbnailUrl: $thumbnailUrl
+    provider: $provider
+    videoId: $videoId
+    categoryId: $categoryId
+    description: $description
+    duration: $duration
+    transcription: $transcription
+    featured: $featured
+    postIds: $postIds
+  ) {
+    id
+    title
+    slug
+    description
+    videoUrl
+    thumbnailUrl
+    provider
+    videoId
+    duration
+    transcription
+    featured
+    createdAt
+    updatedAt
+  }
+}
+
+mutation UpdateVideo(
+  $id: String!
+  $title: String
+  $description: String
+  $videoUrl: String
+  $thumbnailUrl: String
+  $provider: String
+  $videoId: String
+  $duration: Float
+  $transcription: String
+  $featured: Boolean
+  $categoryId: String
+  $postIds: [String!]
+) {
+  updateVideo(
+    id: $id
+    title: $title
+    description: $description
+    videoUrl: $videoUrl
+    thumbnailUrl: $thumbnailUrl
+    provider: $provider
+    videoId: $videoId
+    duration: $duration
+    transcription: $transcription
+    featured: $featured
+    categoryId: $categoryId
+    postIds: $postIds
+  ) {
+    id
+    title
+    slug
+    description
+    videoUrl
+    thumbnailUrl
+    provider
+    videoId
+    duration
+    transcription
+    featured
+    createdAt
+    updatedAt
+  }
+}
+
+mutation DeleteVideo($id: String!) {
+  deleteVideo(id: $id)
+}
+
+mutation AddPostToVideo($videoId: String!, $postId: String!) {
+  addPostToVideo(videoId: $videoId, postId: $postId) {
+    id
+    title
+    posts {
+      id
+      title
+    }
+  }
+}
+
+mutation RemovePostFromVideo($videoId: String!, $postId: String!) {
+  removePostFromVideo(videoId: $videoId, postId: $postId) {
+    id
+    title
+    posts {
+      id
+      title
+    }
+  }
+} 

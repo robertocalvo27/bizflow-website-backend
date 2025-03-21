@@ -3,6 +3,21 @@
 # !!!   DO NOT MODIFY THIS FILE BY YOURSELF   !!!
 # -----------------------------------------------
 
+type CTA {
+  backgroundColor: String
+  buttonColor: String
+  buttonText: String!
+  createdAt: DateTimeISO!
+  description: String!
+  destination: String!
+  id: ID!
+  openInNewTab: Boolean!
+  textColor: String
+  title: String!
+  type: String!
+  updatedAt: DateTimeISO!
+}
+
 type Category {
   canonicalUrl: String
   createdAt: DateTimeISO!
@@ -46,7 +61,7 @@ enum CategorySortField {
 
 input CategorySortInput {
   field: CategorySortField! = NAME
-  order: String! = "DESC"
+  order: SortOrder! = DESC
 }
 
 input CategoryUpdateInput {
@@ -59,6 +74,13 @@ input CategoryUpdateInput {
   name: String
   slug: String
   socialImageUrl: String
+}
+
+"""Tipo de contenido a buscar"""
+enum ContentType {
+  ALL
+  POST
+  VIDEO
 }
 
 input DateFilterInput {
@@ -82,15 +104,32 @@ type LoginResponse {
 }
 
 type Mutation {
+  addPostToVideo(postId: String!, videoId: String!): Video!
+  addTagToPost(postId: String!, tagId: String!): Post!
+  addTagToVideo(tagId: String!, videoId: String!): Video!
+  assignCTAToPost(ctaId: String!, postId: String!): Post!
+  createCTA(backgroundColor: String, buttonColor: String, buttonText: String!, description: String!, destination: String!, openInNewTab: Boolean = false, textColor: String, title: String!, type: String!): CTA!
   createCategory(input: CategoryInput!): Category!
   createPost(input: PostInput!): Post!
+  createTag(input: TagInput!): Tag!
+  createVideo(categoryId: String!, description: String, duration: Float, featured: Boolean! = false, postIds: [String!], provider: String!, thumbnailUrl: String!, title: String!, transcription: String, videoId: String!, videoUrl: String!): Video!
+  deleteCTA(id: String!): Boolean!
   deleteCategory(id: String!): Boolean!
   deletePost(id: String!): Boolean!
+  deleteTag(id: String!): Boolean!
+  deleteVideo(id: String!): Boolean!
   login(email: String!, password: String!): LoginResponse!
   register(input: UserInput!): User!
+  removeCTAFromPost(postId: String!): Post!
+  removePostFromVideo(postId: String!, videoId: String!): Video!
+  removeTagFromPost(postId: String!, tagId: String!): Post!
+  removeTagFromVideo(tagId: String!, videoId: String!): Video!
+  updateCTA(backgroundColor: String, buttonColor: String, buttonText: String, description: String, destination: String, id: String!, openInNewTab: Boolean, textColor: String, title: String, type: String): CTA!
   updateCategory(id: String!, input: CategoryUpdateInput!): Category!
   updatePost(id: String!, input: PostUpdateInput!): Post!
+  updateTag(id: String!, input: TagUpdateInput!): Tag
   updateUser(id: String!, input: UserUpdateInput!): User!
+  updateVideo(categoryId: String, description: String, duration: Float, featured: Boolean, id: String!, postIds: [String!], provider: String, thumbnailUrl: String, title: String, transcription: String, videoId: String, videoUrl: String): Video!
 }
 
 type PageInfo {
@@ -99,6 +138,14 @@ type PageInfo {
   hasPreviousPage: Boolean!
   totalItems: Int!
   totalPages: Int!
+}
+
+type PaginatedCTAResponse {
+  hasMore: Boolean!
+  items: [CTA!]!
+  page: Int!
+  pages: Int!
+  total: Int!
 }
 
 type PaginatedCategories {
@@ -111,14 +158,36 @@ type PaginatedPosts {
   pageInfo: PageInfo!
 }
 
+type PaginatedTagResponse {
+  hasMore: Boolean!
+  items: [Tag!]!
+  page: Int!
+  pages: Int!
+  total: Int!
+}
+
 type PaginatedUsers {
   items: [User!]!
   pageInfo: PageInfo!
 }
 
+type PaginatedVideos {
+  items: [Video!]!
+  meta: PaginationMeta!
+}
+
 input PaginationInput {
   limit: Int = 10
   offset: Int = 0
+}
+
+type PaginationMeta {
+  currentPage: Int!
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  itemsPerPage: Int!
+  totalItems: Int!
+  totalPages: Int!
 }
 
 type Post {
@@ -129,6 +198,8 @@ type Post {
   categoryId: String!
   content: String!
   createdAt: DateTimeISO!
+  cta: CTA
+  ctaId: String
   customMetadata: JSON
   excerpt: String!
   featuredImageAlt: String
@@ -139,6 +210,7 @@ type Post {
   metaDescription: String
   metaKeywords: String
   metaTitle: String
+  metadata: String
   publishedAt: DateTimeISO
   readingTime: Float
   relatedPosts: [Post!]
@@ -147,8 +219,10 @@ type Post {
   socialImageUrl: String
   status: String!
   structuredData: JSON
+  tags: [Tag!]
   title: String!
   updatedAt: DateTimeISO!
+  videos: [Video!]
 }
 
 input PostFilterInput {
@@ -197,7 +271,7 @@ enum PostSortField {
 
 input PostSortInput {
   field: PostSortField! = PUBLISHED_AT
-  order: String! = "DESC"
+  order: SortOrder! = DESC
 }
 
 """Estados posibles de un post"""
@@ -236,18 +310,111 @@ type Query {
   category(id: String!): Category
   categoryBySlug(slug: String!): Category
   countPublishedPosts: Int!
+  featuredVideos: [Video!]!
+  getCTA(id: String!): CTA
+  getCTAs(skip: Int! = 0, take: Int! = 10): PaginatedCTAResponse!
+  getRelatedContent(input: RelatedContentInput!): RelatedContent!
   paginatedCategories(filter: CategoryFilterInput, pagination: PaginationInput, sort: CategorySortInput): PaginatedCategories!
   paginatedPosts(filter: PostFilterInput, pagination: PaginationInput, sort: PostSortInput): PaginatedPosts!
+  paginatedTags(filter: TagFilterInput, pagination: PaginationInput): PaginatedTagResponse!
   paginatedUsers(filter: UserFilterInput, pagination: PaginationInput, sort: UserSortInput): PaginatedUsers!
+  paginatedVideos(limit: Int! = 10, page: Int! = 1): PaginatedVideos!
   post(id: String!): Post
   postBySlug(slug: String!): Post
   posts: [Post!]!
   postsByCategory(categoryId: String!, pagination: PaginationInput, sort: PostSortInput): PaginatedPosts!
   publishedPosts(pagination: PaginationInput, sort: PostSortInput): [Post!]!
+  search(input: SearchInput!, pagination: PaginationInput): SearchResults!
   searchCategories(pagination: PaginationInput, sort: CategorySortInput, term: String!): PaginatedCategories!
   searchPosts(filter: PostFilterInput, pagination: PaginationInput, sort: PostSortInput, term: String!): PaginatedPosts!
+  searchTags(term: String!): [Tag!]!
+  tag(id: String!): Tag
+  tagBySlug(slug: String!): Tag
+  tags(filter: TagFilterInput, pagination: PaginationInput): [Tag!]!
   user(id: String!): User
   users: [User!]!
+  video(id: String!): Video
+  videoBySlug(slug: String!): Video
+  videos: [Video!]!
+  videosByCategory(categoryId: String!, limit: Int! = 10, page: Int! = 1): PaginatedVideos!
+  videosByPost(page: Int! = 1, perPage: Int! = 10, postId: String!): PaginatedVideos!
+}
+
+type RelatedContent {
+  items: [SearchResult!]!
+  total: Int!
+}
+
+input RelatedContentInput {
+  contentId: String!
+  excludeIds: [String!]
+  limit: Int! = 5
+  type: ContentType!
+}
+
+input SearchInput {
+  categories: [String!]
+  fromDate: DateTimeISO
+  query: String
+  sortBy: String
+  sortOrder: SortOrder! = DESC
+  tags: [String!]
+  toDate: DateTimeISO
+  type: ContentType! = ALL
+}
+
+type SearchResult {
+  createdAt: DateTimeISO!
+  post: Post
+  relevanceScore: Int!
+  type: String!
+  video: Video
+}
+
+type SearchResults {
+  hasMore: Boolean!
+  items: [SearchResult!]!
+  page: Int!
+  pages: Int!
+  total: Int!
+}
+
+"""Dirección de ordenamiento (ascendente o descendente)"""
+enum SortOrder {
+  ASC
+  DESC
+}
+
+type Tag {
+  createdAt: DateTimeISO!
+  description: String
+  id: ID!
+  isActive: Boolean
+  name: String!
+  posts: [Post!]
+  slug: String!
+  updatedAt: DateTimeISO!
+  videos: [Video!]
+}
+
+input TagFilterInput {
+  description: String
+  isActive: Boolean
+  name: String
+}
+
+input TagInput {
+  description: String
+  isActive: Boolean
+  name: String!
+  slug: String
+}
+
+input TagUpdateInput {
+  description: String
+  isActive: Boolean
+  name: String
+  slug: String
 }
 
 input TextFilterInput {
@@ -299,11 +466,34 @@ enum UserSortField {
 
 input UserSortInput {
   field: UserSortField! = NAME
-  order: String! = "DESC"
+  order: SortOrder! = DESC
 }
 
 input UserUpdateInput {
   name: String
   password: String
   role: UserRole
+}
+
+type Video {
+  author: User!
+  authorId: String!
+  category: Category!
+  categoryId: String!
+  createdAt: DateTimeISO!
+  description: String
+  duration: Float!
+  featured: Boolean!
+  id: ID!
+  metadata: JSON
+  posts: [Post!]
+  provider: String!
+  slug: String!
+  tags: [Tag!]
+  thumbnailUrl: String!
+  title: String!
+  transcription: String
+  updatedAt: DateTimeISO!
+  videoId: String!
+  videoUrl: String!
 }

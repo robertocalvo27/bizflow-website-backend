@@ -1,8 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, ManyToMany, JoinTable, OneToOne } from 'typeorm';
 import { ObjectType, Field, ID } from 'type-graphql';
 import { User } from './User';
 import { Category } from './Category';
+import { Video } from './Video';
+import { CTA } from './CTA';
 import { GraphQLJSON } from 'graphql-type-json';
+import { Tag } from './Tag';
 
 @ObjectType()
 @Entity('posts')
@@ -119,6 +122,38 @@ export class Post {
     }
   })
   relatedPosts: Post[];
+
+  @Field(() => [Video], { nullable: true })
+  @ManyToMany(() => Video, (video) => video.posts)
+  videos: Video[];
+
+  @Field(() => CTA, { nullable: true })
+  @ManyToOne(() => CTA)
+  @JoinColumn({ name: 'ctaId' })
+  cta: CTA;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  ctaId: string;
+
+  @Field(() => String, { nullable: true })
+  @Column({ type: "jsonb", nullable: true })
+  metadata: any;
+
+  @Field(() => [Tag], { nullable: true })
+  @ManyToMany(() => Tag, tag => tag.posts)
+  @JoinTable({
+    name: 'post_tags',
+    joinColumn: {
+      name: 'post_id',
+      referencedColumnName: 'id'
+    },
+    inverseJoinColumn: {
+      name: 'tag_id',
+      referencedColumnName: 'id'
+    }
+  })
+  tags: Tag[];
 
   @Field({ nullable: true })
   @Column({ nullable: true, name: 'reading_time' })

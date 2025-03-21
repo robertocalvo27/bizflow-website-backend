@@ -7,7 +7,7 @@ import {
   CategorySortInput,
   PaginatedCategories
 } from '../schema/category.schema';
-import { PaginationInput } from '../schema/common.schema';
+import { PaginationInput, SortOrder } from '../schema/common.schema';
 import { AppDataSource } from '../database/data-source';
 import { isAuth } from '../middleware/auth';
 import { slugify } from '../utils/slugify';
@@ -32,7 +32,7 @@ export class CategoryResolver {
   ): Promise<PaginatedCategories> {
     const { offset = 0, limit = 10 } = pagination || {};
     const sortField = sort?.field || 'name';
-    const sortOrder = sort?.order || 'ASC';
+    const sortOrder = sort?.order || SortOrder.ASC;
     
     // Construir el objeto de condiciones where
     const where: FindOptionsWhere<Category> = {};
@@ -122,7 +122,7 @@ export class CategoryResolver {
   ): Promise<PaginatedCategories> {
     const { offset = 0, limit = 10 } = pagination || {};
     const sortField = sort?.field || 'name';
-    const sortOrder = sort?.order || 'ASC';
+    const sortOrder = sort?.order || SortOrder.ASC;
     
     // Iniciar un query builder
     const queryBuilder = this.categoryRepository.createQueryBuilder('category')

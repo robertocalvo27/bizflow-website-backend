@@ -13,7 +13,10 @@
     "migration:revert": "typeorm-ts-node-commonjs --skipLibCheck migration:revert -d src/database/data-source.ts",
     "seed": "ts-node -r tsconfig-paths/register src/database/seedData.ts",
     "setup": "npm run migration:run && npm run seed",
-    "start:dev": "bash scripts/start-dev.sh"
+    "start:dev": "bash scripts/start-dev.sh",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "keywords": [
     "blog",
@@ -24,6 +27,8 @@
   "author": "Bizflow Team",
   "license": "ISC",
   "dependencies": {
+    "@prisma/client": "^6.5.0",
+    "@types/sanitize-html": "^2.13.0",
     "apollo-server-express": "^3.13.0",
     "bcryptjs": "^2.4.3",
     "class-validator": "^0.14.1",
@@ -35,17 +40,23 @@
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.14.1",
     "reflect-metadata": "^0.2.2",
+    "sanitize-html": "^2.15.0",
     "tsconfig-paths": "^4.2.0",
     "type-graphql": "^2.0.0-rc.2",
+    "typedi": "^0.10.0",
     "typeorm": "^0.3.21"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.17",
     "@types/express": "4.17.21",
+    "@types/jest": "^29.5.14",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.13.10",
+    "jest": "^29.7.0",
     "nodemon": "^3.1.9",
+    "prisma": "^6.5.0",
+    "ts-jest": "^29.2.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"
   }

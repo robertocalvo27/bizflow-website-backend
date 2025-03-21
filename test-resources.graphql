@@ -1,0 +1,158 @@
+# Crear un recurso (requiere token de autenticación)
+mutation CreateResource {
+  createResource(input: {
+    title: "Guía Bizflow PDF"
+    description: "Una guía completa sobre cómo usar Bizflow para marketing digital"
+    fileUrl: "https://tudominio.com/recursos/guia-bizflow.pdf"
+    resourceType: PDF
+    fileSize: 2500000
+    thumbnailUrl: "https://tudominio.com/recursos/thumbs/guia-bizflow.jpg"
+    downloadInstructions: "Haz clic en el botón de descarga y guarda el archivo en tu computadora"
+    featured: true
+    categoryId: "tu-categoria-id" # Reemplazar con un ID real de categoría
+    metadata: {
+      pages: 25,
+      author: "Equipo Bizflow",
+      version: "1.0"
+    }
+  }) {
+    id
+    title
+    slug
+    description
+    fileUrl
+    resourceType
+    fileSize
+    thumbnailUrl
+    downloadInstructions
+    featured
+    isPublic
+    downloadCount
+    category {
+      id
+      name
+    }
+    uploader {
+      id
+      fullName
+    }
+    metadata
+    createdAt
+    updatedAt
+  }
+}
+
+# Obtener todos los recursos
+query GetResources {
+  resources {
+    id
+    title
+    slug
+    description
+    resourceType
+    fileSize
+    downloadCount
+    featured
+    createdAt
+  }
+}
+
+# Obtener recursos con paginación y filtros
+query GetPaginatedResources {
+  paginatedResources(
+    pagination: { offset: 0, limit: 10 }
+    filter: { resourceTypes: [PDF, DOC], featured: true }
+    sort: { field: DOWNLOAD_COUNT, order: DESC }
+  ) {
+    items {
+      id
+      title
+      slug
+      description
+      resourceType
+      fileSize
+      downloadCount
+      featured
+      category {
+        id
+        name
+      }
+      uploader {
+        id
+        fullName
+      }
+    }
+    pageInfo {
+      totalItems
+      totalPages
+      currentPage
+      hasNextPage
+      hasPreviousPage
+    }
+  }
+}
+
+# Obtener recursos destacados
+query GetFeaturedResources {
+  featuredResources {
+    id
+    title
+    slug
+    description
+    resourceType
+    fileSize
+    thumbnailUrl
+  }
+}
+
+# Obtener un recurso específico
+query GetResourceById {
+  resource(id: "ID_DEL_RECURSO") {
+    id
+    title
+    slug
+    description
+    fileUrl
+    resourceType
+    fileSize
+    thumbnailUrl
+    downloadInstructions
+    featured
+    isPublic
+    downloadCount
+    category {
+      id
+      name
+    }
+    uploader {
+      id
+      fullName
+    }
+    metadata
+    createdAt
+    updatedAt
+  }
+}
+
+# Obtener recursos por categoría
+query GetResourcesByCategory {
+  resourcesByCategory(
+    categoryId: "ID_DE_LA_CATEGORIA"
+    pagination: { offset: 0, limit: 10 }
+  ) {
+    id
+    title
+    slug
+    resourceType
+    fileSize
+  }
+}
+
+# Incrementar el contador de descargas
+mutation IncrementDownloadCount {
+  incrementDownloadCount(id: "ID_DEL_RECURSO") {
+    id
+    title
+    downloadCount
+  }
+} 

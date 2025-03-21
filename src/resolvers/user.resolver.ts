@@ -8,7 +8,7 @@ import {
   PaginatedUsers,
   UserRole
 } from '../schema/user.schema';
-import { PaginationInput } from '../schema/common.schema';
+import { PaginationInput, SortOrder } from '../schema/common.schema';
 import { AppDataSource } from '../database/data-source';
 import { LoginResponse } from '../schema/auth.schema';
 import { createToken } from '../utils/auth';
@@ -43,7 +43,7 @@ export class UserResolver {
     
     const { offset = 0, limit = 10 } = pagination || {};
     const sortField = sort?.field || 'name';
-    const sortOrder = sort?.order || 'ASC';
+    const sortOrder = sort?.order || SortOrder.ASC;
     
     // Construir el objeto de condiciones where
     const where: FindOptionsWhere<User> = {};

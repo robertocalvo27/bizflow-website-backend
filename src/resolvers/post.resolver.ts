@@ -8,12 +8,13 @@ import {
   PostSortInput,
   PostStatus
 } from '../schema/post.schema';
-import { PaginationInput } from '../schema/common.schema';
+import { PaginationInput, SortOrder } from '../schema/common.schema';
 import { AppDataSource } from '../database/data-source';
 import { isAuth } from '../middleware/auth';
 import { MyContext } from '../middleware/auth';
 import { slugify } from '../utils/slugify';
 import { In, Like, Between, IsNull, Not, FindOptionsWhere, FindOptionsOrder } from 'typeorm';
+import { CTA } from '../models/CTA';
 
 // Función para calcular el tiempo de lectura basado en el contenido
 function calculateReadingTime(content: string): number {
@@ -35,7 +36,7 @@ export class PostResolver {
   async posts(): Promise<Post[]> {
     return this.postRepository.find({
       relations: ['author', 'category', 'relatedPosts'],
-      order: { createdAt: 'DESC' },
+      order: { createdAt: SortOrder.DESC },
     });
   }
 
@@ -47,7 +48,7 @@ export class PostResolver {
   ): Promise<PaginatedPosts> {
     const { offset = 0, limit = 10 } = pagination || {};
     const sortField = sort?.field || 'publishedAt';
-    const sortOrder = sort?.order || 'DESC';
+    const sortOrder = sort?.order || SortOrder.DESC;
     
     // Construir el objeto de condiciones where
     const where: FindOptionsWhere<Post> = {};
@@ -151,7 +152,7 @@ export class PostResolver {
   ): Promise<Post[]> {
     const { offset = 0, limit = 10 } = pagination || {};
     const sortField = sort?.field || 'publishedAt';
-    const sortOrder = sort?.order || 'DESC';
+    const sortOrder = sort?.order || SortOrder.DESC;
     
     const order: FindOptionsOrder<Post> = {
       [sortField]: sortOrder,
@@ -197,7 +198,7 @@ export class PostResolver {
   ): Promise<PaginatedPosts> {
     const { offset = 0, limit = 10 } = pagination || {};
     const sortField = sort?.field || 'publishedAt';
-    const sortOrder = sort?.order || 'DESC';
+    const sortOrder = sort?.order || SortOrder.DESC;
     
     const order: FindOptionsOrder<Post> = {
       [sortField]: sortOrder,
@@ -242,7 +243,7 @@ export class PostResolver {
   ): Promise<PaginatedPosts> {
     const { offset = 0, limit = 10 } = pagination || {};
     const sortField = sort?.field || 'publishedAt';
-    const sortOrder = sort?.order || 'DESC';
+    const sortOrder = sort?.order || SortOrder.DESC;
     
     // Iniciar un query builder
     const queryBuilder = this.postRepository.createQueryBuilder('post')
@@ -433,5 +434,78 @@ export class PostResolver {
 
     const result = await this.postRepository.delete(id);
     return result.affected !== 0;
+  }
+
+  @Mutation(() => Post)
+  @UseMiddleware(isAuth)
+  async assignCTAToPost(
+    @Arg('postId') postId: string,
+    @Arg('ctaId') ctaId: string,
+    @Ctx() { payload }: MyContext
+  ): Promise<Post> {
+    const post = await this.postRepository.findOne({ 
+      where: { id: postId },
+      relations: ['author']
+    });
+
+    if (!post) {
+      throw new Error('Post no encontrado');
+    }
+
+    // Verificar que el usuario sea el autor o un administrador
+    if (payload.role !== 'admin' && post.authorId !== payload.userId) {
+      throw new Error('No tienes permiso para editar este post');
+    }
+
+    // Verificar que el CTA exista
+    const ctaRepository = AppDataSource.getRepository(CTA);
+    const cta = await ctaRepository.findOne({ where: { id: ctaId } });
+
+    if (!cta) {
+      throw new Error('CTA no encontrado');
+    }
+
+    // Asignar el CTA al post
+    post.ctaId = ctaId;
+    post.cta = cta;
+
+    await this.postRepository.save(post);
+    
+    return post;
+  }
+
+  @Mutation(() => Post)
+  @UseMiddleware(isAuth)
+  async removeCTAFromPost(
+    @Arg('postId') postId: string,
+    @Ctx() { payload }: MyContext
+  ): Promise<Post> {
+    const post = await this.postRepository.findOne({ 
+      where: { id: postId },
+      relations: ['author'] 
+    });
+
+    if (!post) {
+      throw new Error('Post no encontrado');
+    }
+
+    // Verificar que el usuario sea el autor o un administrador
+    if (payload.role !== 'admin' && post.authorId !== payload.userId) {
+      throw new Error('No tienes permiso para editar este post');
+    }
+
+    // Usar un raw query para evitar problemas de tipado
+    await this.postRepository.query(
+      `UPDATE posts SET "ctaId" = NULL WHERE id = $1`, 
+      [postId]
+    );
+
+    // Recargar el post actualizado para asegurarnos de tener datos frescos
+    const updatedPost = await this.postRepository.findOne({
+      where: { id: postId },
+      relations: ['author']
+    });
+
+    return updatedPost!;
   }
 } 
