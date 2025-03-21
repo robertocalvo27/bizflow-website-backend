@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "es2018",
+    "module": "commonjs",
+    "lib": ["es2018", "esnext.asynciterable"],
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@models/*": ["src/models/*"],
+      "@resolvers/*": ["src/resolvers/*"],
+      "@schema/*": ["src/schema/*"],
+      "@utils/*": ["src/utils/*"],
+      "@database/*": ["src/database/*"],
+      "@config/*": ["src/config/*"],
+      "@middleware/*": ["src/middleware/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+} 

@@ -1,0 +1,51 @@
+# Dependencias
+/node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Archivos de compilación
+/dist
+/build
+/out
+/.next
+
+# Archivos de entorno
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Archivos de log
+logs
+*.log
+
+# Archivos del sistema
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Archivos de IDE/editor
+/.idea
+/.vscode
+*.swp
+*.swo
+
+# TypeScript
+*.tsbuildinfo
+
+# Cobertura
+/coverage
+
+# Archivos temporales
+/tmp
+/temp
+
+# Archivos de base de datos
+*.sqlite
+*.sqlite3

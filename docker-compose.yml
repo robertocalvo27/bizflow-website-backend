@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: bizflow-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-bizflow}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - bizflow-network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: bizflow-pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@bizflow.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    networks:
+      - bizflow-network
+    depends_on:
+      - postgres
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bizflow-api
+    restart: always
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-bizflow}
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${PORT:-4000}
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    networks:
+      - bizflow-network
+    depends_on:
+      - postgres
+    command: npm run dev
+
+networks:
+  bizflow-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
