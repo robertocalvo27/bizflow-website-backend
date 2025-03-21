@@ -15,6 +15,18 @@ import { MyContext } from '../middleware/auth';
 import { slugify } from '../utils/slugify';
 import { In, Like, Between, IsNull, Not, FindOptionsWhere, FindOptionsOrder } from 'typeorm';
 
+// Función para calcular el tiempo de lectura basado en el contenido
+function calculateReadingTime(content: string): number {
+  // Promedio de palabras leídas por minuto
+  const wordsPerMinute = 225;
+  // Contar palabras en el contenido (aproximado)
+  const wordCount = content.trim().split(/\s+/).length;
+  // Calcular tiempo en minutos
+  const readingTime = Math.ceil(wordCount / wordsPerMinute);
+  // Devolver al menos 1 minuto
+  return Math.max(1, readingTime);
+}
+
 @Resolver()
 export class PostResolver {
   private postRepository = AppDataSource.getRepository(Post);
@@ -294,6 +306,11 @@ export class PostResolver {
       input.slug = slugify(input.title);
     }
 
+    // Calcular tiempo de lectura si no se proporciona
+    if (!input.readingTime && input.content) {
+      input.readingTime = calculateReadingTime(input.content);
+    }
+
     // Asignar el usuario autenticado como autor si no se especifica
     const authorId = input.authorId || payload.id;
 
@@ -361,6 +378,11 @@ export class PostResolver {
     // Si se cambia el estado a 'published' y no tenía fecha de publicación, asignarla
     if (input.status === PostStatus.PUBLISHED && post.status !== PostStatus.PUBLISHED) {
       input.publishedAt = new Date();
+    }
+
+    // Calcular tiempo de lectura si se actualizó el contenido y no se proporcionó un nuevo tiempo de lectura
+    if (input.content && !input.readingTime) {
+      input.readingTime = calculateReadingTime(input.content);
     }
 
     // Extraer los IDs de posts relacionados
